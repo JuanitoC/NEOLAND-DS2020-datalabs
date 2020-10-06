@@ -1,0 +1,492 @@
+---
+title: "4_Vectores_Matrices"
+author: "Marco R."
+date: "04/10/2019"
+output: 
+  html_document: 
+    fig_caption: yes
+    highlight: haddock
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+---
+
+# Creando vectores
+
+Te sientes de suerte? 
+
+Eso espero, porque en este capítulo vamos de viaje a la Ciudad del Pecado, también conocida como el *"Paraíso del estadístico"* ;-).
+
+Gracias a R y a tus nuevas habilidades analíticas, vas a aprender cómo mejorar tus ganancias en el casino y empezar una lucrativa carrera como jugador profesional. En este capítulo veremos cómo puedes fácilmente llevar la cuenta de tus apuestas y como hacer análisis simples de tus jugadas. Próxima parada... Viva las Vegas!!!
+
+# Creando vectores (2)
+
+Primero concentrémonos.
+
+En nuestro camino a para quebrar al casino, haremos uso extensivo de los vectores. Un vector es un arreglo unidimensional que puede contener datos numéricos, caracteres, o valores lógicos. En otras palabras un vector es una herramienta simple para guardar un conjunto de datos del mismo tipo. Por ejemplo podemos llevar la cuenta de las ganancias y pérdidas en los juegos de casino.
+
+En R, se crea un vector con la función [`c()`](http://www.rdocumentation.org/packages/base/functions/c). La función se llama c por "combinar". Se ponen los valores o elementos del vector dentro de paréntesis, separados por coma. Por ejemplo:
+
+```
+vector_numerico <- c(1, 2, 3)
+vector_caracter <- c("a", "b", "c")
+vector_logico <- c(TRUE, FALSE)
+```
+
+```{r eval=FALSE}
+vector_numerico <- c(1, 10, 49)
+vector_caracter <- c("a", "b", "c")
+# Completa el código para vector_logico
+vector_logico <- c(TRUE, FALSE, TRUE)
+```
+
+Una vez has creado estos vectores en R puedes usarlos para hacer cálculos.
+
+## Vectores
+
+Después de una semana en Las Vegas y cero Ferraris en tu garage, decides que es hora de empezar a utilizar tus super-poderes analíticos.
+
+Antes de hacer un primer análisis, decides llevar un registro de todas tus ganancias y pérdidas de la semana pasada:
+
+En el poker:
+- Lunes: ganaste 140
+- Martes: perdiste 50
+- Miercoles: ganaste 20
+- Jueves: perdiste 120
+- Viernes: ganaste 240
+
+En la ruleta: 
+- Lunes: perdiste 24
+- Martes: perdiste 50
+- Miercoles: ganaste 100
+- Jueves: perdiste 350
+- Viernes: ganaste 10
+
+
+Solamente has jugado poker y ruleta, porque un grupo de adivinos se ha apoderado de la mesa de dados. Para poder utilizar esos datos en R, decides crear las variables `vector_poker` y `vector_ruleta`.
+
+```{r eval=FALSE}
+# Resultados en la mesa de poker en la semana
+vector_poker <- c(140, -50, 20, -120, 240)
+
+# Resultados en la ruleta en la semana
+vector_ruleta <- c(-24, -50, 100, -350, 10)
+```
+
+
+```{r}
+# Creamos un vector con los días de la semana
+dias_semana = c("Lunes", "Martes", "Miercoles", "Jueves", "Viernes")
+```
+
+
+```{r}
+# Asignamos los nombres a los dos vectores de poker y ruletas
+names(vector_poker) <- dias_semana
+names(vector_ruleta) <- dias_semana
+
+# Imprimimos los resultados
+vector_ruleta
+vector_poker
+```
+
+
+```{r}
+# Alternativa - Asignar los nombres a los valores del vector_poker
+names(vector_poker) <- c("Lunes", "Martes", "Miercoles", "Jueves", "Viernes")
+```
+
+> La instrucción de arriba está # comentada, simplemente quitar el comento # para ejecutarla.
+
+
+## Calculando las ganancias totales
+
+Ahora que tienes los resultados del poker y la ruleta en un vector con elementos apropiadamente nombrados, puedes empezar a hacer análisis.
+
+
+Veremos como encontrar la siguiente información:
+- La ganancia/pérdida total por cada día de la semana.
+- La ganancia/pérdida total en la semana.
+- Sabremos si estas ganando o perdiendo dinero en el poker y en la ruleta.
+
+
+```{r}
+#  Creamos un vector númerico 4,5,6 llamado vector_B
+vector_B <- c(4, 5, 6)
+
+# Realizamos la suma del vector_B y vector_numerico
+vector_B + vector_numerico
+```
+
+
+
+Primero, hay que saber cuál fue la ganancia/pérdida por cada día. La ganancia neta de cada día es la suma de las ganancias/pérdidas que hiciste en el poker y en la ruleta. 
+
+
+```{r}
+# Calculando las ganancias/pérdidas diarias:
+total_diario <- vector_poker + vector_ruleta
+
+total_diario
+```
+
+
+```{r}
+# En caso de rectificar algunos de los valorse al "vuelo" utilizamos la función fix()
+# fix(vector_poker)
+```
+
+
+## Calculando ganancias totales (3)
+
+Basado en los análisis previos, parece que tuviste una mezcla de días buenos y malos. Esto no era lo que tu ego esperaba, y te preguntas si quizás hay una (muy pequeña) posibilidad de que hayas perdido dinero en la semana.
+
+
+```{r}
+# Ganaste o perdiste durante la semana al poker?
+vector_poker
+total_poker = sum(vector_poker)
+total_poker
+```
+
+
+```{r}
+# Ganaste o perdiste durante la semana a la ruleta?
+total_ruleta = sum(vector_ruleta)
+total_ruleta
+```
+
+
+```{r}
+#ganancias en el poker son más altas que en la ruleta:
+comparativa <- total_poker > total_ruleta
+```
+
+
+
+
+
+```{r}
+# Visualizamos solo los datos del jueves y viernes
+vector_poker[c(4,5)]
+
+# Visualizamos solo los datos del jueves y viernes
+vector_poker[c(4:5)]
+
+# Visualizamos los datos excepto el lunes
+vector_poker[c(-1)]
+
+# Visualizamos solo los datos del martes, miercoles y jueves
+vector_poker[c(2:4)]
+
+# Visualizamos solo los datos del martes, miércoles y jueves
+vector_poker[c(2,3,4)]
+```
+
+
+## Más estadísticos
+
+```{r}
+# Promedio de la ruleta
+promedio_ruleta = mean(vector_ruleta)
+promedio_ruleta
+
+# Promedio de la ruleta miercoles, jueves, viernes
+promedio_ultimos_3dias <- mean(vector_ruleta[c(3:5)])
+promedio_ultimos_3dias
+
+
+# Que días obtuviste ganancias en el poker?
+positivos_poker <- vector_poker > 0
+positivos_poker
+
+# Que días obtuviste ganancias en el ruleta?
+positivos_ruleta <- vector_ruleta > 0
+positivos_ruleta
+ 
+# Selecciona los valores de vector_ruleta que fueron ganancias
+ganancias_ruleta <- vector_ruleta[positivos_ruleta]
+ganancias_ruleta
+```
+
+
+
+
+* * *
+
+# ¿Que es una Matriz?
+
+En R, una matriz es un conjunto de elementos del mismo tipo (numérico, caracter o lógico) arreglados de forma rectangular en filas y columnas. Como una matriz se compone de filas y columnas decimos que es un objeto de dos dimensiones. 
+
+
+Para construir una matriz en R usamos la función [`matrix()`](http://www.rdocumentation.org/packages/base/functions/matrix). Consideremos el siguiente ejemplo: 
+
+```
+matrix(1:9, byrow = TRUE, nrow = 3)
+```
+
+En la función [`matrix()`](http://www.rdocumentation.org/packages/base/functions/matrix):
+- El primer argumento es la colección de elementos que R pondrá en la matriz. Aquí usamos `1:9` para construir el vector `c(1,2,3,4,5,6,7,8,9)`.
+- El argumento `byrow = TRUE` indica que la matriz debe de ser llenada por filas. Si queremos que la matriz sea llenada por columnas escribimos `byrow = FALSE` (o bien no escribimos el argumento, ya que `byrow = FALSE` es el valor predeterminado).
+- El tercer argumento `nrow = 3` indica el número de filas que deseamos que nuestra matriz tenga, en este caso 3.
+
+
+
+```{r}
+
+matrix(1:9, byrow = TRUE, nrow = 3)
+
+```
+
+```{r}
+
+matrix(1:9, byrow = FALSE, nrow = 3)
+
+```
+
+
+## Analizando matrices
+
+Es hora de ensuciarnos las manos. En los siguientes ejercicios vamos a analizar los números de las películas de Star Wars. Que la fuerza te acompañe!
+
+En el editor, se definen tres vectores. Cada uno representa el dinero hecho en taquilla por las primeras tres películas de la saga. El primer elemento de cada vector indica los ingresos obtenidos en Estados Unidos, el segundo es el dinero hecho fuera de los Estados Unidos (fuente: Wikipedia).
+
+```{r}
+# Taquilla de Star Wars: En Millones de dólares (USD)!
+# Primer elemento taquilla en EEUU, segundo taquilla fuera de EEUU.
+new_hope <- c(460.998, 314.400)
+empire_strikes <- c(290.475, 247.900)
+return_jedi <- c(309.306, 165.800)
+```
+
+
+
+```{r}
+# Agrega el código para construir la matriz
+star_wars_matrix <- matrix(c(new_hope, empire_strikes, return_jedi), byrow = TRUE, nrow = 3)
+```
+
+
+```{r}
+# Evaluamos si es una matriz
+is.matrix(star_wars_matrix)
+```
+
+```{r}
+# Convertimos si es una matriz
+as.matrix(star_wars_matrix)
+```
+
+
+```
+
+## Nombrando a las filas y columnas de una matriz
+rownames(mi_matriz) <- vector_nombres_filas
+colnames(mi_matriz) <- vector_nombres_columnas
+
+## columnas > EEUU // no-EEUU
+## filas > "A New Hope", "The Empire Strikes Back", "Return of the Jedi" 
+
+```
+
+
+## Calculando la taquilla mundial
+
+Una de las cosas más importantes para quienes han invertido en hacer una película no es que tan buena es, sino cuánto dinero hace en la taquilla mundial!
+
+Para calcular el total de la taquilla tienes que sumar lo que la película hizo en EEUU y fuera de EEUU. Como cada fila contiene los datos de una película, debemos sumar los dos elementos de cada fila. 
+
+```
+vector_sumas_filas <- rowSums(mi_matriz)
+```
+
+```{r}
+# Suma de taquillas
+taquilla_mundial <- rowSums(star_wars_matrix)
+taquilla_mundial
+
+## rowsum(star_wars_matrix,'group',TRUE)
+```
+
+
+## Agregando la columna de taquilla mundial
+
+En el ejercicio anterior calculamos un vector que tenía información sobre la taquilla mundial para cada una de las tres películas. Sin embargo este vector no es parte de nuestra matriz `star_wars_matrix`.
+
+```
+matriz_grande <- cbind(matriz1, matriz2, vector1, vector2)
+```
+
+```{r}
+matriz_grande <- cbind(star_wars_matrix, taquilla_mundial)
+matriz_grande
+```
+
+```{r}
+vector_nombres_col <- c("EEUU","no-EEUU", "taquilla mundial")
+colnames(matriz_grande) <- vector_nombres_col
+matriz_grande
+```
+
+
+Combina las filas dos matrices de la siguiente manera: 
+```
+rbind(matrix1, matrix2)
+```
+
+```{r}
+# Construye la primera matriz
+taquillas <- c(461, 314.4, 290.5, 247.9, 309.3, 165.8)
+nombres <- c("A New Hope","The Empire Strikes Back","Return of the Jedi")
+nombres_columnas <- c("EEUU","no-EEUU")
+star_wars_matrix <- matrix(taquillas, nrow = 3, byrow = TRUE, dimnames = list(nombres, nombres_columnas))
+
+
+#  Construye la segunda matriz
+taquillas2 <- c(474.5, 552.5, 310.7, 338.7, 380.3, 468.5)
+nombres2 <- c("The Phantom Menace", "Attack of the Clones", "Revenge of the Sith")
+
+star_wars_matrix2 <- matrix(taquillas2, nrow=3, byrow = TRUE, dimnames = list(nombres2, nombres_columnas))
+```
+
+
+
+```{r}
+# Matriz que contiene los datos para la primera trilogía
+star_wars_matrix  
+
+# Matriz que contiene los datos para la segunda trilogía
+star_wars_matrix2 
+
+# Combina ambas trilogías en una sola matriz
+todas_star_wars <- rbind(star_wars_matrix, star_wars_matrix2)
+```
+
+
+## Taquilla total para toda la saga
+- Calcula el ingreso total para las columnas EEUU y no-EEUU, asigna estos totales al vector `taquilla_por_region`. Utiliza la función [`colSums()`](http://www.rdocumentation.org/packages/base/functions/colSums).
+- Imprime `taquilla_por_region` a la consola. ¿En que región generó mas ingresos la saga?
+
+
+```{r}
+# Primera matriz
+taquillas <- c(461, 314.4, 290.5, 247.9, 309.3, 165.8)
+nombres <- c("A New Hope","The Empire Strikes Back","Return of the Jedi")
+nombres_columnas <- c("US","non-US")
+star_wars_matrix <- matrix(taquillas, nrow = 3, byrow = TRUE, dimnames = list(nombres, nombres_columnas))
+
+# Segunda matriz
+taquillas2 <- c(474.5, 552.5, 310.7, 338.7, 380.3, 468.5)
+nombres2 <- c("The Phantom Menace", "Attack of the Clones", "Revenge of the Sith")
+star_wars_matrix2 <- matrix(taquillas2, nrow=3, byrow = TRUE, dimnames = list(nombres2, nombres_columnas))
+
+# Combina los datos de ambas trilogías en una matriz
+todas_star_wars <- rbind(star_wars_matrix, star_wars_matrix2)
+```
+
+
+```{r}
+# Datos para todas las películas de Star Wars
+todas_star_wars
+
+# Total de taquilla para EEUU y no-EEUU
+taquilla_por_region <- colSums(todas_star_wars)
+taquilla_por_region
+```
+
+
+## Seleccionando elementos de una matriz
+
+De manera similar  a los vectores, podemos usar los corchetes `[]` para seleccionar elementos de una matriz. Recuerda que las matrices son objetos de dos dimensiones, así que cada elemento tiene dos índices: el de la fila y el de la columna. Para seleccionar elementos de una matriz hay que indicar los índices de las filas y los índices de las columnas separados por coma. Estos ejemplos harán más claro como seleccionar valores de una matriz, es aconsejable que experimentes en la consola con alguna matriz que construyas.
+
+- `my_matrix[1,2]` selecciona el elemento que está en la primera fila y en la segunda columna.
+- `my_matrix[1:3,2:4]` selecciona los elementos de las filas 1,2,3 y las columnas 2,3,4.
+
+Si quieres seleccionar todos los elementos de una fila o una columna solo deja en blanco el espacio correspondiente:
+
+- `my_matrix[,1]` selecciona todos los elementos de la primera columna.
+- `my_matrix[1,]` selecciona todos los elementos de la primera fila.
+
+### Practiquemos con las matrices de Star Wars!
+
+- Calcula el promedio de taquilla para la región no-EEUU, asigna el resultado a la variable `promedio_noEEUU`.
+- Calcula el promedio de taquilla para EEUU, pero únicamente para las primeras dos películas. Asigna el resultado a la variable `promedio_EEUU`.
+
+```{r}
+# Taquilla Star Wars, en Millones
+# Construcción de la matriz
+taquillas <- c(461, 314.4, 290.5, 247.9, 309.3, 165.8)
+nombres <- c("A New Hope","The Empire Strikes Back","Return of the Jedi")
+nombres_columnas <- c("EEUU","no-EEUU")
+star_wars_matrix <- matrix(taquillas, nrow = 3, byrow = TRUE, dimnames = list(nombres, nombres_columnas))
+
+# Imprime la matriz construida a la consola
+star_wars_matrix 
+
+# Promedio para la región no-EEUU
+promedio_noEEUU  <- mean(star_wars_matrix[,2])  
+  
+# Promedio para EEUU (solamente dos primeras películas)
+
+promedio_EEUU <- mean(star_wars_matrix[1:2,1])
+```
+
+
+
+## Aritmética con matrices
+
+De manera similar a como aprendimos con los vectores, los operadores comunes: `+`, `-`, `/`, `*`, etc. trabajan de la misma manera en las matrices: la operación se realiza elemento por elemento.
+
+Por ejemplo: `2 * mi_matriz` multiplica cada elemento de `mi_matriz` por `2`. De nuevo R recicla el valor de `2` e internamente crea una matriz de las mismas dimensiones de `mi_matriz` cuyos elementos son el número `2`, luego hace la operación elemento por elemento.
+
+Como el nuevo analista de datos de Lucasfilm, es tu primer tarea encontrar cuantos visitantes fueron a ver cada una de las películas en cada región. Ya tenemos el total de taquilla en `star_wars_matrix`. Supongamos que el precio de cada entrada es de 5 dólares. Recuerda que el valor de la taquilla dividido por el precio es igual al número de entradas vendidas.
+
+- Asigna a la variable `entradas` la matriz con el número estimado de entradas por cada película.
+- Imprime la matriz resultante en la consola.
+
+```{r}
+# Taquilla Star Wars, en Millones
+# Construcción de la matriz
+taquillas <- c(461, 314.4, 290.5, 247.9, 309.3, 165.8)
+nombres <- c("A New Hope","The Empire Strikes Back","Return of the Jedi")
+nombres_columnas <- c("EEUU","no-EEUU")
+star_wars_matrix <- matrix(taquillas, nrow = 3, byrow = TRUE, dimnames = list(nombres, nombres_columnas))
+
+# Estimación de entradas vendidas
+entradas <- star_wars_matrix/5 
+  
+# Imprime entradas a la consola
+entradas
+```
+
+
+## Aritmética con matrices (2) 
+
+Así como `2*mi_matriz` multiplica cada elemento de `mi_matriz` por `2`, el código  `mi_matriz1 * mi_matriz2` crea una matriz en la cual cada elemento es el producto de los elementos correspondientes en `mi_matriz1` y `mi_matriz2`.
+
+Después de ver a los resultados del ejercicio anterior, el gran jefe Lucas señala que los precios de las entradas subieron un dólar cada vez que salía una nueva película. Tu jefe te pide que vuelvas a hacer el análisis basándote en los precios que encuentras en la matriz `precios` (fuente: imaginación).
+
+_Aquellos familiarizados con operaciones con matrices, noten que esto no es la multiplicación tradicional de matrices, para ejecutar la operación algebraica de multiplicación utiliza el operador `%*%`._
+
+- Asigna a la variable `entradas` la matriz que estima el número de entradas vendidas para cada película en las dos regiones analizadas.
+- Asigna a `entradas_promedio_EEUU` el número de entradas promedio vendidas en EEUU por película.
+- Asigna a `entradas_promedio_noEEUU` el número de entradas promedio vendidas fuera de los EEUU por película.
+
+```{r}
+# Taquilla Star Wars, en Millones
+# Construcción de la matriz
+taquillas <- c(461, 314.4, 290.5, 247.9, 309.3, 165.8)
+nombres <- c("A New Hope","The Empire Strikes Back","Return of the Jedi")
+nombres_columnas <- c("EEUU","no-EEUU")
+star_wars_matrix <- matrix(taquillas, nrow = 3, byrow = TRUE, dimnames = list(nombres, nombres_columnas))
+precios <- matrix(c(5, 5, 6, 6, 7, 7), nrow = 3, byrow = TRUE, dimnames = list(nombres, nombres_columnas)) 
+
+# Número de entradas vendidas
+entradas <- star_wars_matrix / precios
+
+# Número promedio de entradas vendidas en EEUU
+entradas_promedio_EEUU <- mean(entradas[,1])
+
+# Número promedio de entradas vendidas fuera de EEUU
+entradas_promedio_noEEUU <- mean(entradas[,2]) 
+```

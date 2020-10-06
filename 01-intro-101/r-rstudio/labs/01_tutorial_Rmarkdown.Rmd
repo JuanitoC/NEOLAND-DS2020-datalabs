@@ -1,0 +1,105 @@
+---
+title: "1_Primer_fichero_en_RMarkdown"
+author: "Marco R."
+date: "28/9/2019"
+output: html_document
+---
+
+# Encabezado más importante
+## Segundo encabezado
+### Tercer encabezado
+
+#### Cuarto encabezado
+
+##### El quinto encabezado
+
+###### El sexto encabezado
+
+Diferentes tipos de formato de textos
+TEXTO Texto Texto *negrita* o _negrita_
+textos texto texto **cursiva** o __cursiva__
+texto texto texto ***cursiva negrita*** o ___cursiva negrita___
+
+
+Tipo de listas ordenadas
+
+1. Lista1
+2. Lista2
+3. Lista3
+
+Tipo de listas no ordenadas
+
+* lista4
+* lista5
+* lista6
+
+
+Esto será nuestra cita
+
+> Cualquier cita aquí
+
+
+
+Linea de separación de grosor fino
+
+***
+
+Linea de separación de grosor mediano
+
+* * *
+
+Cuando creamos un documento en markdown y queremos añadir porciones de códigos, llamados *chunck* es importante tener en cuenta de utilizar las 
+
+'''
+``` 
+# este es un comentario en nuestro código
+x = pi/2
+print(x)
+
+```
+'''
+
+La diferencia entre *'''* y *```* las primeras comillas se utilizan para introducir código dentro de nuestro textos y las segundas comillas para abrir los **chunk** de código.
+
+
+```{r primer_chunk}
+# Estoy creando una nueva variable nombre
+nombre <- "Marco"
+
+# Imprimir la variable nombre
+print(nombre)
+
+# Ejecutamos la variable nombre
+nombre
+
+# Imprimimos un error
+print("Nombre")
+
+```
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using [R Markdown see](http://rmarkdown.rstudio.com).
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
