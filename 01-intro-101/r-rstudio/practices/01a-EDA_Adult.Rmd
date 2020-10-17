@@ -1,0 +1,57 @@
+---
+title: "08_EDA_AdultCensus"
+author: "nombre - apellido - Bootcamp NEOLAND"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document: 
+    highlight: tango
+    theme: spacelab
+    toc: yes
+---
+
+Basado en la última práctica EDA Titanic en R Studio (el fichero original así como el fichero HTML se encuentra en Google Drive), deben realizar una EDA completo para este dataset:
+
+https://archive.ics.uci.edu/ml/datasets/adult
+
+**IMPORTANTE**:
+Los pasos a realizar son:
+- [ ] exploración
+- [ ] limpieza
+- [ ] discretización
+
+
+Intentar crear el output de salida en formato HTML (buscar info de `knit` y sus dependencias)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Cargamos el juego de datos
+datosAdult <- read.csv('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data',stringsAsFactors = FALSE, header = FALSE)
+
+# Nombres de los atributos
+names(datosAdult) <- c("age","workclass","fnlwgt","education","education-num","marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hour-per-week","native-country","income")
+```
+
+```{r}
+unique(datosAdult$education)
+unique(datosAdult$`education-num`)
+```
+
+
+
+
+```{r}
+filas= nrow(datosAdult)
+E18=c(" Preschool"," 1st-4th"," 5th-6th"," 7th-8th"," 9th"," 10th" ," 11th"," 12th")
+E912=c(" HS-grad"," Some-college"," Assoc-acdm"," Assoc-voc")
+E1316=c(" Bachelors"," Masters" ," Prof-school"," Doctorate")
+ for (i in filas){
+if (datosAdult$education[i] %in% E18){
+  datosAdult$education[i]= "E18"
+} else if(datosAdult$education[i] %in% E912){
+  datosAdult$education[i]= "E912"
+} else if (datosAdult$education[i] %in% E1316){
+  datosAdult$education[i]= "E1316"
+}
+}
+table(datosAdult$education)
+```
+

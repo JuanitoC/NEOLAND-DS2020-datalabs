@@ -1,0 +1,480 @@
+---
+title: "vectores_factores_matrices"
+author: "Marco R."
+date: "16-10-2020"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    fig_caption: yes
+    highlight: haddock
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+---
+
+
+
+# Vectores
+## VAmos a jugar al casino
+
+```{r}
+# Creamos un vector de los días de la semana
+dias_semana = c("Lunes", "Martes", "Miercoles",
+                "Jueves", "Viernes", 
+                "Sabado", "Domingo")
+vector_poker = c(140, -50, -20, 20, 100, 200, -100)
+vector_ruleta = c(100, 100, -400, 20, 10, 100, 200)
+
+# alternativa con scan()
+#vector_ruleta <- scan() # con la función scan podemos introducir manualmente los valores en consola
+vector_ruleta
+```
+
+
+```{r}
+vector_poker
+```
+
+
+
+```{r}
+# Asignacion de los nombres de las columnas
+names(vector_poker) = dias_semana
+names(vector_ruleta) = dias_semana
+```
+
+
+```{r}
+vector_poker
+```
+
+
+```{r}
+# Calculando las ganancias / pérdidas diarias
+total_diario = vector_poker + vector_ruleta
+total_diario
+```
+
+## Funciones básicas sobre los vectores
+
+```{r}
+length(vector_poker) # calcula la longitud del vector
+max(vector_poker) # calcula el valor máximo
+min(vector_poker) # calcula el valor mínimo
+
+# which()
+vector_ruleta[which(vector_ruleta>50)] # me devuelve unos resultados según la condición indicada que sea TRUE
+
+# which.max y which.min devuelve los índices respectivos de los vectores
+which.min(vector_poker)
+which.max(vector_ruleta)
+
+# Ordenar los vectores
+sort(vector_poker) # ordena de menor a mayor los valores
+sort(vector_poker, decreasing = TRUE) # ordena de mayor a menor los valores del vector
+print(vector_poker)
+
+
+# Operaciones
+mean(vector_poker) # devuelve el promedio
+median(vector_ruleta) # devuelve la mediana
+var(vector_ruleta) # devuelve la varianza
+cov(vector_poker, vector_ruleta) # covarianza
+cor(vector_poker, vector_ruleta) # correlación
+sd(vector_ruleta) # devueleve la desviación estandar
+
+# valores absolutos y valores relativos
+table(vector_poker) # dsitribución de las frecuencias absolutas
+table(vector_ruleta) / length(vector_ruleta) # distribución de las frecuencias relativas
+# table(vector_ruleta) / 7 ----->>>>> NUNCA NUNCA NUNCA
+
+
+   
+```
+
+
+## Ciclo FOR aplicado a los vectores
+
+```{r}
+suma <- 0
+for (i in vector_poker){
+  suma <- suma+1 # suma los índices
+}
+suma
+```
+
+
+```{r}
+suma <- 0
+for (i in vector_poker){
+  suma <- suma+i # suma los valores
+}
+suma
+```
+
+
+```{r}
+# popular un vector
+num <-  NULL # se inicializa con un vector VACIO
+for (i in 1:100) {
+  num <- c(num, i)
+}
+
+num
+```
+
+
+
+
+```{r}
+# alternativa del método de asignación de arriba
+
+num <- 0
+for (i in 1:100) {
+  num[i] <- i
+}
+
+num
+```
+
+
+
+```{r}
+# otra forma de declarar los vectores
+vector_1 <- scan()
+vector_1
+```
+
+```{r}
+# help(seq) ejecuta la ayuda de seq
+seq(1,100) # genera secuencia de 100 num
+```
+
+```{r}
+seq(1,100, by = 5) # devuelve una secuencia de valores de 1 a 100 con paso 5
+seq()
+seq(0, 1, length.out = 20)
+seq(1,10, along.with = 1)
+seq(stats::rnorm(20))
+seq(1,100, by = pi)
+pi
+```
+
+
+
+# Matrices en R
+
+```{r}
+# matrix() nrow - ncol por filas
+A <-  matrix(c(1,4,6,8,-1,-4,0,6,0), 
+             nrow = 3,
+             ncol = 3,
+             byrow = F # por defecto es FALSE
+)
+A
+```
+
+```{r}
+# matrix() nrow - ncol por columnas
+A <-  matrix(c(1,4,6,8,-1,-4,0,6,0), 
+             nrow = 3,
+             ncol = 3,
+             byrow = T # forzamos el parámetro en TRUE
+)
+A
+```
+
+
+```{r}
+# añadimos filas y columnas con las funciones rbind() y cbind()
+
+matriz_2 <- cbind(A, c(-3,-5,9))
+matriz_2
+
+matrix_3 <- rbind(A, c(5,10,0))
+matrix_3
+
+# Probamos en añadir una fila con dos valores solamente ?¿ 
+matrix_2 <- rbind(A, c(12, NULL, 10))
+matrix_2
+```
+
+
+```{r}
+matrix_2
+```
+
+
+
+
+
+```{r}
+# Referenciamos los valores en la matriz
+matrix_2[1,3] # extrae el valor de la primera fila, tercera columna
+
+matrix_3[3,] # extrae los valores de la tercera fila
+
+matrix_3[,2] # extrae los valores de la segunda columna
+
+matrix_3[1:2, ] # extrae los valores de 2 filas y todas las columnas
+
+matrix_3[2,2:3] # extrae los valores de la segunda fila, columna 2 y 3
+```
+
+
+
+### Operaciones con matrices
+
+```{r}
+dim(matrix_2) # dimensión de la matriz
+
+dim(matrix_2)[1] # devuelve el resultado del números de filas de dim()
+
+dim(matrix_2)[2] # devuelve el resultado del número de columnas de dim()
+```
+
+```{r}
+diag(matrix_3) # extrae los elementos de la diagonal de la matriz
+
+t(matrix_3)  # transpone una matriz
+
+matrix_2*matrix_3 # operaciones de matrices
+
+#matrix_2%*% matrix_2 producto escalado
+```
+
+## Declaramos las funciones
+
+```{r}
+cuadrado <- function(x){
+  x^2
+}
+
+cuadrado(vector_ruleta)
+
+```
+
+
+```{r}
+# Alternativa para aplicar una función personalizada
+sapply(vector_ruleta, FUN = cuadrado)
+```
+
+
+### Factores
+
+```{r}
+student <- c(1, 3, 5, 7, 8, 9, 10)
+fac <- factor(student, 
+              levels = c(1,3,5,7,9,10),
+              labels = c("Sup", "Sup", "Aprob", "Notab", "Exc","MH"))
+fac
+```
+
+
+```{r}
+genero <- c("Masculino", "Femenino", "Femenino", "Masculino", "Masculino")
+factor_genero <- factor(genero)
+factor_genero
+```
+
+
+```{r}
+desempeno_laboral <- c("Alto", "Bajo", "Medio", "Alto", "Bajo", "Medio", "Alto", "Alto", "Bajo")
+factor_laboral = factor(desempeno_laboral,
+                        levels = c("Bajo", "Medio", "Alto"),
+                        ordered = TRUE)
+factor_laboral
+
+```
+
+
+```{r}
+
+factor_laboral[1] # extrae el valor de la primera posición del vector
+factor_laboral[2] # extrae el valor de la segunda pos del vector
+
+factor_laboral[1] < factor_laboral[2] # devolverá FALSE porque ALTO es mayor que BAJO
+factor_laboral[3] > factor_laboral[2] # devuelve TRUE porque MEDIO es mayor que BAJO
+levels(factor_laboral) # devuelve los niveles del factor
+
+is.ordered(factor_laboral) # está ordenado el factor (vector factorizado)
+is.factor(desempeno_laboral) # es un factor el vector desempeno_laboral? Será FALSE porque es un vector simple
+
+
+
+# Demostración del factor sin niveles sin ordenación
+factor_2 <- as.factor(desempeno_laboral)
+factor_2
+
+factor_2[1]
+factor_2[2]
+
+#factor_2[1] > factor_2[2] # no puede realizar una comparativa porque no tenemos niveles ordenados
+
+```
+
+
+# Práctica con Matrices 
+
+```{r}
+# Taquilla de Star Wars: En Millones de dólares (USD)!
+# Primer elemento taquilla en EEUU, segundo taquilla fuera de EEUU.
+new_hope <- c(460.998, 314.400)
+empire_strikes <- c(290.475, 247.900)
+return_jedi <- c(309.306, 165.800)
+```
+
+
+
+```{r}
+# Crear una matriz
+star_wars_matriz <- matrix(
+  c(new_hope, empire_strikes, return_jedi),
+  byrow = TRUE,
+  nrow = 3
+)
+
+star_wars_matriz
+```
+
+```{r}
+# como puedo saber si es una matriz ?
+is.matrix(star_wars_matriz) # evalua si es una matriz o no
+#typeof(star_wars_matriz) evalua el valor
+```
+
+### 
+Las peliculas son:
+new_hope
+empire_strikes
+return_jedi
+
+Donde se han recaudadas las taquillas
+USA
+no-USA
+
+```{r}
+star_wars_matriz
+```
+
+```{r}
+# Creamos primero los vectores
+peliculas <- c("New Hope",
+               "Empire Strikes",
+               "Return Jedi")
+
+country <- c("USA",
+             "no-USA")
+
+# Asignamos a las filas el vector pelicula y las columnas el vector country
+
+rownames(star_wars_matriz) <- peliculas
+colnames(star_wars_matriz) <- country
+
+star_wars_matriz
+```
+
+
+```{r}
+# Sumamos las taquillas por fila
+vec_suma_fila <-  rowSums(star_wars_matriz)
+vec_suma_fila
+
+# colSums() suma por columna
+```
+
+
+```{r}
+length(star_wars_matriz)
+```
+
+
+```{r}
+# suma de las taquillas globales
+taquilla_global <- colSums(
+  star_wars_matriz
+)
+taquilla_global[1]
+taquilla_global[2]
+
+taquilla_global[1] + taquilla_global[2]
+```
+
+
+
+```{r}
+# Creamos una nueva matriz
+
+taquillas2 <- c(474.5, 552.5, 310.7, 338.7, 380.3, 468.5)
+nombres2 <- c("The Phantom Menace", "Attack of the Clones", "Revenge of the Sith")
+
+star_wars_matriz_2 <- matrix(
+  taquillas2,
+  nrow = 3,
+  byrow = TRUE,
+  dimnames = list(
+    nombres2,
+  country) # country es igual a c("US", "no-US")
+)
+star_wars_matriz_2
+
+```
+
+
+```{r}
+# combinación de matrices
+todo_star_wars <- rbind(star_wars_matriz,
+                        star_wars_matriz_2) # realizamos un append por fila de las dos matrices
+todo_star_wars
+```
+
+```{r}
+# total de las taquillas de US y noUS
+total_taquillas_region <- colSums(todo_star_wars)
+total_taquillas_region
+```
+
+
+```{r}
+# Promedio no-US
+promedio_noUS <- mean(todo_star_wars[,2])
+promedio_noUS
+
+# Promedio US
+promedio_US <- mean(todo_star_wars[,1])
+promedio_US
+
+# Promedio de las 3 primeras peliculas US
+promedio_3_US <- mean(todo_star_wars[1:3,1])
+promedio_3_US
+
+# Buscamos el max de las taquillas de no-US
+max_taquillas_noUS <- max(todo_star_wars[,2])
+max_taquillas_noUS
+
+# Buscamos el promedio de no-US pero de forma alterna   
+promedio_alterno_noUS <- mean(todo_star_wars[c(1,3,5),2])
+promedio_alterno_noUS
+
+# Buscamos los resultados de la segunda fila, segunda columna
+todo_star_wars[2,2]
+
+
+# Buscamos los resultados de la segunda columna
+todo_star_wars[,2]
+
+# Buscamos los resultados de la cuarta fila
+todo_star_wars[4,]
+
+# Buscamos el min de la quinta fila
+min(todo_star_wars[5,])
+
+# Desviación estandar de la segunda columna
+sd(todo_star_wars[,2])
+```
+
+
+
+
