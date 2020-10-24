@@ -1,0 +1,278 @@
+---
+title: "08_EDA_AdultCensus"
+author: "nombre - apellido - Bootcamp NEOLAND"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document: 
+    highlight: tango
+    theme: spacelab
+    toc: yes
+---
+
+Basado en la última práctica EDA Titanic en R Studio (el fichero original así como el fichero HTML se encuentra en Google Drive), deben realizar una EDA completo para este dataset:
+
+https://archive.ics.uci.edu/ml/datasets/adult
+
+**IMPORTANTE**:
+Los pasos a realizar son:
+- [X] exploración
+- [X] limpieza
+- [X] discretización
+
+
+Intentar crear el output de salida en formato HTML (buscar info de `knit` y sus dependencias)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Cargamos el juego de datos
+datosAdult <- read.csv('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data',stringsAsFactors = FALSE, header = FALSE)
+
+
+# Nombres de los atributos
+names(datosAdult) <- c("age","workclass","fnlwgt","education","education-num","marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hour-per-week","native-country","income")
+
+
+
+
+```
+
+
+```{r}
+library(dplyr)
+library(tidyverse)
+
+
+filas= c(1:nrow(datosAdult)) ## Cambio está linea, así crea un rango para hacer el for.
+E18=c(" Preschool"," 1st-4th"," 5th-6th"," 7th-8th"," 9th"," 10th" ," 11th"," 12th")
+E912=c(" HS-grad"," Some-college"," Assoc-acdm"," Assoc-voc")
+E1316=c(" Bachelors"," Masters" ," Prof-school"," Doctorate")
+
+datosAdult <- mutate(datosAdult, EdLevel = '')
+
+
+for (i in filas){ ## Modifico un poco este código, no quiero perder los valores originales por si fueran útiles en otro momento. Entiendo que se corresponden con niveles bajos, medios y altos de educación.
+
+if (datosAdult$education[i] %in% E18==TRUE){
+  datosAdult$EdLevel[i]= "E18 - Low"
+} else if(datosAdult$education[i] %in% E912==TRUE){
+  datosAdult$EdLevel[i]= "E912 - Medium"
+} else if (datosAdult$education[i] %in% E1316==TRUE){
+  datosAdult$EdLevel[i]= "E1316 - High"
+}
+}
+
+rm(filas ,E18, E912, E1316)
+
+```
+
+
+```{r}
+
+## Reviso que el Dataframe no tiene campos vaciós, NA ni NULL
+
+table(is.na(datosAdult)) 
+table(is.null(datosAdult))
+sum(apply(datosAdult,2,is.nan))
+
+
+typeof(datosAdult)
+is.data.frame(datosAdult)
+str(datosAdult)
+
+```
+
+
+# A partir de este momento reviso las variables una a una, estas son las modificaciónes a realizar cuando procede.
+
+```{r}
+# Comprobamos que el 91,7% de las observaciones en capital-gain corresponden a 0, sacamos esta columna del dataset al no ser determinante para ningún análisis.
+round(table(datosAdult$`capital-gain`)/nrow(datosAdult)*100,1)
+datosAdult <-select(datosAdult, -`capital-gain`)
+```
+
+```{r}
+#  Comprobamos que el 93,5% de las observaciones en capital-loss corresponden a 0, sacamos esta columna del dataset al no ser determinante para ningún análisis.
+
+round(table(datosAdult$`capital-loss`)/nrow(datosAdult)*100,1)
+datosAdult <-select(datosAdult, -`capital-loss`)
+
+```
+
+
+
+```{r}
+
+# Estudio de workclass: El 5,6% de los valores workclass son ? así que procedo a reemplazarlo
+round(table(datosAdult$workclass)/nrow(datosAdult)*100,1)
+
+# Creo un dataframe Data_DFcon las variables que necesito 'Workclass' y 'edlevel', creo una tabla y comienzo a filtrar para selecciónar el valor más frecuente, una vez los tengo creo el datagrame data_DFfullfill con la información necesaria para reemplazar.
+
+listforvalues <-unique(datosAdult$EdLevel) ## Lista con los observaciones únicas de educación
+
+## Creo un dataframe en el que excluyo las líneas con valor Workclass == '?', las lineas con las que no quiero trabajar
+
+
+Data_DF <- select(datosAdult,workclass,EdLevel) %>%  filter(workclass!=' ?')
+
+Data_DF <- data.frame(table(Data_DF)) ## Uso la función table para poder obtener los datos agregados.
+Data_DFfullfill <- ''
+
+for (x in listforvalues){ ## en estas lineas busco la freq más alta para cada tipo de educación y lo agrego a DataDffullfill
+  Filtered_DF <- filter(Data_DF, EdLevel==x) 
+  Filtered_DF <- filter(Filtered_DF, Freq==max(Filtered_DF$Freq)) 
+  Data_DFfullfill <- rbind(Data_DFfullfill, Filtered_DF)}
+
+
+Data_DFfullfill <- Data_DFfullfill[-c(1),] ## Borro la primera línea de data_dffullfill, ya que está en blanco, esto se debe a la forma en la que lo he creado.
+
+head(Data_DFfullfill)
+
+# procedo a reemplazar
+
+Rx <- c(1:nrow(Data_DFfullfill))
+
+  
+  for (x in Rx){
+
+   datosAdult <-  mutate(datosAdult , workclass= if_else(workclass==' ?'& EdLevel == as.character(Data_DFfullfill[x,2])
+                                                      , as.character(Data_DFfullfill[x,1])
+                                                      ,workclass)
+                        )               
+  }                  
+
+# Reviso que está bien 
+
+round(table(datosAdult$workclass)/nrow(datosAdult)*100,1)
+
+# Borro los objetos de este modulo
+
+rm(Data_DF, Data_DFfullfill,Filtered_DF,Rx,x,VartoFact,listforvalues)
+                          
+```
+
+
+
+
+
+```{r}
+
+# Estudio de Occupation: El 5,7% de los valores occupation son ? así que procedo a reemplazarlo, para ello busco la ocupación más frecuente ségun el nivel de estudio
+round(table(datosAdult$occupation)/nrow(datosAdult)*100,1)
+
+# Uso el mismo código que en la variable anterior
+
+
+listforvalues <-unique(datosAdult$EdLevel) 
+
+Data_DF <- filter(datosAdult,occupation!=' ?')  %>% select(occupation,EdLevel) 
+Data_DF <- data.frame(table(Data_DF))
+Data_DFfullfill <- ''
+
+for (x in listforvalues){
+  Filtered_DF <- filter(Data_DF, EdLevel==x) 
+  Filtered_DF <- filter(Filtered_DF, Freq==max(Filtered_DF$Freq)) 
+  Data_DFfullfill <- rbind(Data_DFfullfill, Filtered_DF)}
+
+Data_DFfullfill <- Data_DFfullfill[-c(1),]
+
+head(Data_DFfullfill)
+
+# procedo a reemplazar
+
+Rx <- c(1:nrow(Data_DFfullfill))
+
+  
+  for (x in Rx){
+
+   datosAdult <-  mutate(datosAdult , occupation= if_else(occupation==' ?'& EdLevel == as.character(Data_DFfullfill[x,2])
+                                                      , as.character(Data_DFfullfill[x,1])
+                                                      ,occupation)
+                        )               
+  }                  
+
+# Reviso que está bien 
+
+round(table(datosAdult$occupation)/nrow(datosAdult)*100,1)
+
+# Borro los objetos de este modulo
+
+rm(Data_DF, Data_DFfullfill,Filtered_DF,Rx,x,VartoFact,listforvalues)
+                          
+```
+
+
+```{r}
+# Estudio de native-country: El 1,8% de los valores native-cpuntry son ? así que procedo a reemplazarlo, para ello busco la ocupación más frecuente ségun el nivel de estudio
+round(table(datosAdult$`native-country`)/nrow(datosAdult)*100,1)
+
+# Uso el mismo código que en la variable anterior
+
+
+listforvalues <-unique(datosAdult$EdLevel)
+
+Data_DF <- filter(datosAdult,`native-country`!=' ?')  %>% select(`native-country`,EdLevel) 
+Data_DF <- data.frame(table(Data_DF))
+Data_DFfullfill <- ''
+
+for (x in listforvalues){
+  Filtered_DF <- filter(Data_DF, EdLevel==x) 
+  Filtered_DF <- filter(Filtered_DF, Freq==max(Filtered_DF$Freq)) 
+  Data_DFfullfill <- rbind(Data_DFfullfill, Filtered_DF)}
+
+Data_DFfullfill <- Data_DFfullfill[-c(1),]
+
+head(Data_DFfullfill)
+
+# procedo a reemplazar
+
+Rx <- c(1:nrow(Data_DFfullfill))
+
+  
+  for (x in Rx){
+
+   datosAdult <-  mutate(datosAdult , `native-country`= if_else(`native-country`==' ?'& EdLevel == as.character(Data_DFfullfill[x,2])
+                                                      , as.character(Data_DFfullfill[x,1])
+                                                      ,`native-country`)
+                        )               
+  }                  
+
+# Reviso que está bien 
+
+round(table(datosAdult$`native-country`)/nrow(datosAdult)*100,1)
+
+# Borro los objetos de este modulo
+
+rm(Data_DF, Data_DFfullfill,Filtered_DF,Rx,x,VartoFact,listforvalues)
+
+
+```
+
+
+
+
+
+
+
+
+# Procedo a factorizar variables no numéricas, este caso las importantes son las variables modificadas: Workclass, occupation, native-country
+```{r}
+
+## Defino las variables a factorizar
+
+cols <- c("workclass",
+          "occupation",
+          "native-country")
+
+for (i in cols){
+  datosAdult[,i] = as.factor(datosAdult[,i])
+}
+
+
+## Compruebo que la factorización ha funcionando
+
+
+str(datosAdult)
+
+
+rm(cols,i)
+
+```

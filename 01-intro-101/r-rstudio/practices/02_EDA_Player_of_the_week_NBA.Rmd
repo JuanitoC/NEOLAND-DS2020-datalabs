@@ -81,7 +81,7 @@ str(nba)
 
 ### head() es resumen de los 6 primeros resultados
 ```{r}
-head(nba)
+head(nba,6)
 ```
 
 
@@ -106,6 +106,8 @@ row.names(nba)
 ## 3.1 Asignar NA a los valores ausentes en los datos de Conference.
 ```{r}
 levels(nba$Conference)
+table(nba$Conference)
+
 ```
 
 *creamos una lista conf*

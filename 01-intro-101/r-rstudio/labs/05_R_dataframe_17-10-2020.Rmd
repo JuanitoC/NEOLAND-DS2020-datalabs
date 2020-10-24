@@ -206,7 +206,7 @@ library(dplyr)
 
 ```{r}
 # Cargamos el dataset 
-data_titanic <- read.csv(file = "../NEOLAND_professor-BAK/bootcamp_DS_201920_NEOLAND/04-R_STUDIO/R_notebook/data/titanic.csv", stringsAsFactors = F)
+data_titanic <- read.csv(file = "C:/Users/JD/Desktop/Datos/titanic.csv", stringsAsFactors = F)
 
 # observamos las dimensiones del dataset
 dim(data_titanic)

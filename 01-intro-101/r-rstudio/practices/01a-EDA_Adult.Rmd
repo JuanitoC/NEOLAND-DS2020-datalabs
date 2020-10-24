@@ -15,8 +15,8 @@ https://archive.ics.uci.edu/ml/datasets/adult
 
 **IMPORTANTE**:
 Los pasos a realizar son:
-- [ ] exploración
-- [ ] limpieza
+- [X] exploración
+- [X] limpieza
 - [ ] discretización
 
 
@@ -26,32 +26,317 @@ Intentar crear el output de salida en formato HTML (buscar info de `knit` y sus 
 # Cargamos el juego de datos
 datosAdult <- read.csv('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data',stringsAsFactors = FALSE, header = FALSE)
 
+
 # Nombres de los atributos
 names(datosAdult) <- c("age","workclass","fnlwgt","education","education-num","marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hour-per-week","native-country","income")
 ```
 
-```{r}
-unique(datosAdult$education)
-unique(datosAdult$`education-num`)
-```
-
-
-
 
 ```{r}
-filas= nrow(datosAdult)
+library(dplyr)
+library(tidyverse)
+
+
+filas= c(1:nrow(datosAdult)) ## Cambio está linea, así crea un rango para hacer el for.
 E18=c(" Preschool"," 1st-4th"," 5th-6th"," 7th-8th"," 9th"," 10th" ," 11th"," 12th")
 E912=c(" HS-grad"," Some-college"," Assoc-acdm"," Assoc-voc")
 E1316=c(" Bachelors"," Masters" ," Prof-school"," Doctorate")
- for (i in filas){
-if (datosAdult$education[i] %in% E18){
-  datosAdult$education[i]= "E18"
-} else if(datosAdult$education[i] %in% E912){
-  datosAdult$education[i]= "E912"
-} else if (datosAdult$education[i] %in% E1316){
-  datosAdult$education[i]= "E1316"
+
+datosAdult <- mutate(datosAdult, EdLevel = '')
+
+
+for (i in filas){ ## Modifico un poco este código, no quiero perder los valores originales por si fueran útiles en otro momento. Entiendo que se corresponden con niveles bajos, medios y altos de educación.
+
+if (datosAdult$education[i] %in% E18==TRUE){
+  datosAdult$EdLevel[i]= "E18 - Low"
+} else if(datosAdult$education[i] %in% E912==TRUE){
+  datosAdult$EdLevel[i]= "E912 - Medium"
+} else if (datosAdult$education[i] %in% E1316==TRUE){
+  datosAdult$EdLevel[i]= "E1316 - High"
 }
 }
-table(datosAdult$education)
+```
+```{r}
+
+## Reviso que el Dataframe no tiene campos vaciós, NA ni NULL
+
+table(is.na(datosAdult)) 
+table(is.null(datosAdult))
+sum(apply(datosAdult,2,is.nan))
+
+
+typeof(datosAdult)
+is.data.frame(datosAdult)
+str(datosAdult)
+
 ```
 
+
+# A partir de este momento reviso las variables una a una, estas son las modificaciónes a realizar cuando procede.
+
+```{r}
+# Estudio de workclass: El 5,6% de los valores workclass son ? así que procedo a reemplazarlo
+round(table(datosAdult$workclass)/nrow(datosAdult)*100,1)
+
+# El 5,6% de los valores workclass son ? así que procedo a reemplazarlo , para ello busco la ocupación más frecuente ségun el nivel de estudios
+
+# Creo un dataframe WorkClassDF con las variables que necesito 'Workclass' y 'edlevel', creo una tabla y comienzo a filtrar para selecciónar el mayor valor, una vez los tengo creo el datagrame Workclassfullfill con la información necesaria para reemplazar.
+WorkClassDF <- filter(datosAdult, datosAdult$workclass!=' ?')
+WorkClassDF <- select(WorkClassDF,workclass,EdLevel)
+WorkClassDF <- data.frame(table(WorkClassDF))
+
+FreqLow <- filter(WorkClassDF, EdLevel=='E18 - Low') 
+FreqLow <- filter(FreqLow, Freq==max(FreqLow$Freq)) 
+
+FreqMedium <- filter(WorkClassDF, EdLevel=="E912 - Medium") 
+FreqMedium <- filter(FreqMedium, Freq==max(FreqMedium$Freq)) 
+
+FreqHigh <- filter(WorkClassDF, EdLevel=="E1316 - High") 
+FreqHigh <- filter(FreqHigh, Freq==max(FreqHigh$Freq)) 
+
+Workclassfullfill <- rbind(FreqLow, FreqMedium, FreqHigh)
+
+## Para los 3 casos la workclass más apropiada es 'Private'
+
+head(Workclassfullfill)
+
+# procedo a reemplazar
+
+Rx <- c(1:nrow(Workclassfullfill))
+
+  
+  for (x in Rx){
+
+   datosAdult <-  mutate(datosAdult , workclass= if_else(workclass==' ?'& EdLevel == as.character(Workclassfullfill[x,2])
+                                                      , as.character(Workclassfullfill[x,1])
+                                                      ,workclass)
+                        )               
+  }                  
+
+# Reviso que está bien 
+
+round(table(datosAdult$workclass)/nrow(datosAdult)*100,1)
+
+# Borro los objetos de este modulo
+
+rm(Workclassfullfill,FreqHigh,FreqMedium,FreqLow,WorkClassDF)
+                          
+   
+```
+
+```{r}
+# Comprobamos que el 91,7% de las observaciones en capital-gain corresponden a 0, sacamos esta columna del dataset al no ser determinante para ningún análisis.
+round(table(datosAdult$`capital-gain`)/nrow(datosAdult)*100,1)
+
+datosAdult <-select(datosAdult, -`capital-gain`)
+```
+
+```{r}
+#  Comprobamos que el 93,5% de las observaciones en capital-loss corresponden a 0, sacamos esta columna del dataset al no ser determinante para ningún análisis.
+
+round(table(datosAdult$`capital-loss`)/nrow(datosAdult)*100,1)
+datosAdult <-select(datosAdult, -`capital-loss`)
+
+```
+
+
+```{r}
+# Estudio de Occupation: El 5,7% de los valores workclass son ? así que procedo a reemplazarlo, para ello busco la ocupación más frecuente ségun el nivel de estudio
+round(table(datosAdult$occupation)/nrow(datosAdult)*100,1)
+
+
+# Creo un dataframe OccupationDF con las variables que necesito 'Occupation' y 'edlevel', creo una tabla y comienzo a filtrar para selecciónar el mayor valor, una vez los tengo creo el datagrame Occupationfullfill con la información necesaria para reemplazar.
+
+workclassDF <- filter(datosAdult, datosAdult$workclass!=' ?')
+workclassDF <- select(workclassDF,workclass,EdLevel)
+workclassDF <- data.frame(table(workclassDF))
+
+FreqLow <- filter(workclassDF, EdLevel=='E18 - Low') 
+FreqLow <- filter(FreqLow, Freq==max(FreqLow$Freq)) 
+
+FreqMedium <- filter(workclassDF, EdLevel=="E912 - Medium") 
+FreqMedium <- filter(FreqMedium, Freq==max(FreqMedium$Freq)) 
+
+FreqHigh <- filter(workclassDF, EdLevel=="E1316 - High") 
+FreqHigh <- filter(FreqHigh, Freq==max(FreqHigh$Freq)) 
+
+workclassfullfill <- rbind(FreqLow, FreqMedium, FreqHigh)
+
+## Para los 3 casos la workclass más apropiada es 'Private'
+
+head(workclassfullfill)
+
+# procedo a reemplazar
+
+Rx <- c(1:nrow(workclassfullfill))
+
+  
+  for (x in Rx){
+
+   datosAdult <-  mutate(datosAdult , workclass= if_else(workclass==' ?'& EdLevel == as.character(workclassfullfill[x,2])
+                                                      , as.character(workclassfullfill[x,1])
+                                                      ,workclass)
+                        )               
+  }                  
+
+# Reviso que está bien 
+
+round(table(datosAdult$workclass)/nrow(datosAdult)*100,1)
+
+# Borro los objetos de este modulo
+
+rm(workclassfullfill,FreqHigh,FreqMedium,FreqLow,workclassDF)
+   
+```
+
+```{r}
+# Estudio de Occupation: El 5,7% de los valores workclass son ? así que procedo a reemplazarlo, para ello busco la ocupación más frecuente ségun el nivel de estudio
+round(table(datosAdult$occupation)/nrow(datosAdult)*100,1)
+
+
+# Creo un dataframe OccupationDF con las variables que necesito 'Occupation' y 'edlevel', creo una tabla y comienzo a filtrar para selecciónar el mayor valor, una vez los tengo creo el datagrame Occupationfullfill con la información necesaria para reemplazar.
+
+OccupationDF <- filter(datosAdult, datosAdult$occupation!=' ?')
+OccupationDF <- select(OccupationDF,occupation,EdLevel)
+OccupationDF <- data.frame(table(OccupationDF))
+
+FreqLow <- filter(OccupationDF, EdLevel=='E18 - Low') 
+FreqLow <- filter(FreqLow, Freq==max(FreqLow$Freq)) 
+
+FreqMedium <- filter(OccupationDF, EdLevel=="E912 - Medium") 
+FreqMedium <- filter(FreqMedium, Freq==max(FreqMedium$Freq)) 
+
+FreqHigh <- filter(OccupationDF, EdLevel=="E1316 - High") 
+FreqHigh <- filter(FreqHigh, Freq==max(FreqHigh$Freq)) 
+
+Occupationfullfill <- rbind(FreqLow, FreqMedium, FreqHigh)
+
+## Para los 3 casos la workclass más apropiada es 'Private'
+
+head(Occupationfullfill)
+
+# procedo a reemplazar
+
+Rx <- c(1:nrow(Occupationfullfill))
+
+  
+  for (x in Rx){
+
+   datosAdult <-  mutate(datosAdult , occupation= if_else(occupation==' ?'& EdLevel == as.character(Occupationfullfill[x,2])
+                                                      , as.character(Occupationfullfill[x,1])
+                                                      ,occupation)
+                        )               
+  }                  
+
+# Reviso que está bien 
+
+round(table(datosAdult$occupation)/nrow(datosAdult)*100,1)
+
+# Borro los objetos de este modulo
+
+rm(Occupationfullfill,FreqHigh,FreqMedium,FreqLow,OccupationDF)
+   
+
+```
+
+
+```{r}
+# Estudio de native-country: El 1,8% de los valores native-cpuntry son ? así que procedo a reemplazarlo, para ello busco la ocupación más frecuente ségun el nivel de estudio y la raza
+round(table(datosAdult$`native-country`)/nrow(datosAdult)*100,1)
+
+
+# Creo un dataframe CountryDF con las variables que necesito 'Race' y 'edlevel', creo una tabla y comienzo a filtrar para selecciónar el mayor valor, una vez los tengo creo el datagrame Countryfullfill con la información necesaria para reemplazar.
+
+CountryDF <- filter(datosAdult,datosAdult$`native-country` !=' ?') 
+CountryDF <- select(CountryDF,`native-country`,race)
+CountryDF <- data.frame(table(CountryDF))
+
+FreqWhite <- filter(CountryDF, race==' White') 
+FreqWhite <- filter(FreqWhite, Freq==max(FreqWhite$Freq)) 
+
+FreqBlack <- filter(CountryDF, race==" Black") 
+FreqBlack <- filter(FreqBlack, Freq==max(FreqBlack$Freq)) 
+
+FreqAsianPI <- filter(CountryDF, race==" Asian-Pac-Islander") 
+FreqAsianPI <- filter(FreqAsianPI, Freq==max(FreqAsianPI$Freq)) 
+
+FreqAmerIE <- filter(CountryDF, race==" Amer-Indian-Eskimo") 
+FreqAmerIE <- filter(FreqAmerIE, Freq==max(FreqAmerIE$Freq))
+
+FreqAmerOther <- filter(CountryDF, race==" Other") 
+FreqAmerOther <- filter(FreqAmerOther, Freq==max(FreqAmerOther$Freq)) 
+
+
+Countryfullfill <- rbind(FreqWhite, FreqBlack, FreqAsianPI, FreqAmerIE, FreqAmerOther)
+
+## Para los 3 casos la workclass más apropiada es 'Private'
+
+head(Countryfullfill)
+
+# procedo a reemplazar
+
+Rx <- c(1:nrow(Countryfullfill))
+
+  
+  for (x in Rx){
+
+   datosAdult <-  mutate(datosAdult , `native-country`= if_else(`native-country`==' ?'& race == as.character(Countryfullfill[x,2])
+                                                      , as.character(Countryfullfill[x,1])
+                                                      ,`native-country`)
+                        )               
+  }                  
+
+# Reviso que está bien 
+
+round(table(datosAdult$`native-country`)/nrow(datosAdult)*100,1)
+
+# Borro los objetos de este modulo
+
+rm(Countryfullfill,FreqWhite, FreqBlack, FreqAsianPI, FreqAmerIE, FreqAmerOther,CountryDF)
+```
+
+
+
+# Procedo a factorizar variables no numéricas.
+```{r}
+
+
+
+
+
+str(datosAdult)
+```
+
+# Con los datos limpios lanzo algunos gráficos para extraer conclusiones
+
+```{r}
+
+ggplot(data=datosAdult,
+       aes(
+         x = race,
+         fill = sex,
+
+         )
+       ) + geom_bar() 
+
+ggplot(data=datosAdult,
+       aes(
+         x = sex,
+         fill = EdLevel,
+
+         )
+       ) + geom_bar() 
+
+ggplot(data=datosAdult,
+       aes(
+         x = occupation,
+         fill = income,
+
+         )
+       ) + geom_bar() 
+
+
+
+
+
+```
