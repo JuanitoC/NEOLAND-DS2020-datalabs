@@ -41,6 +41,7 @@ filas= c(1:nrow(datosAdult)) ## Cambio está linea, así crea un rango para hace
 E18=c(" Preschool"," 1st-4th"," 5th-6th"," 7th-8th"," 9th"," 10th" ," 11th"," 12th")
 E912=c(" HS-grad"," Some-college"," Assoc-acdm"," Assoc-voc")
 E1316=c(" Bachelors"," Masters" ," Prof-school"," Doctorate")
+<<<<<<< HEAD:01-intro-101/r-rstudio/practices/01a-EDA_Adult.Rmd
 
 datosAdult <- mutate(datosAdult, EdLevel = '')
 
@@ -53,6 +54,15 @@ if (datosAdult$education[i] %in% E18==TRUE){
   datosAdult$EdLevel[i]= "E912 - Medium"
 } else if (datosAdult$education[i] %in% E1316==TRUE){
   datosAdult$EdLevel[i]= "E1316 - High"
+=======
+ for (i in 1:filas){
+if (datosAdult$education[i] %in% E18){
+  datosAdult$education[i]= "E18"
+} else if(datosAdult$education[i] %in% E912){
+  datosAdult$education[i]= "E912"
+} else if (datosAdult$education[i] %in% E1316){
+  datosAdult$education[i]= "E1316"
+>>>>>>> 544bda3a0c346c1aa0f7b26b2659a46c6e62e5b4:01-intro-101/r-rstudio/practices/01a-EDA-Adult/01a-EDA_Adult.Rmd
 }
 }
 ```
