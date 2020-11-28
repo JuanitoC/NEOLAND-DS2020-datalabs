@@ -1,0 +1,55 @@
+```{r}
+rm(list=ls())
+cat("\014")
+
+library(lubridate)
+library(nycflights13)
+library(dplyr)
+library(stringr)
+vuelos <- flights
+
+colnames(vuelos) <- c("anio","mes","dia","horario_salida",
+                      "salida_programada","atraso_salida",
+                      "horario_llegada",
+                      "llegada_programada","atraso_llegada",
+                      "aerolinea","vuelo","codigo_cola","origen",
+                      "destino","tiempo_vuelo","distancia","hora",
+                      "minuto","fecha_hora")
+
+
+
+vuelos %>% select(anio,mes,dia,hora,minuto)
+
+vuelos_1 <- vuelos %>% 
+  select(anio,mes,dia,hora,minuto) %>%
+  mutate(salida=make_datetime(anio,mes,dia,hora,minuto))
+
+#tiempo%/%100
+#tiempo%%100
+
+Horario <- function(anio,mes,dia,tiempo){
+  make_datetime(anio,mes,dia,tiempo%/%100,tiempo%%100)
+}
+
+vuelos <- na.omit(vuelos)
+
+summary(vuelos)
+
+vuelos_tr <- vuelos %>% transmute( 
+  Salida=Horario(anio,mes,dia,horario_salida),
+  salida_programada=Horario(anio,mes,dia,salida_programada),
+  Llegada_programada=Horario(anio,mes,dia,llegada_programada),
+  LLegada=Horario(anio,mes,dia,horario_llegada)
+)
+
+library(ggplot2)
+
+vuelos_tr %>% ggplot(aes(Salida)) + geom_freqpoly(binwidth=80000)
+
+vuelos_tr%>% filter(Salida<ymd(20130102)) %>% ggplot(aes(Salida)) + geom_freqpoly(binwidth=600)
+
+vuelos_raros <- vuelos_tr %>% filter(LLegada<Salida)
+
+```
+
+

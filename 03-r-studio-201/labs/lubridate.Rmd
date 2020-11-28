@@ -1,0 +1,82 @@
+---
+title: "Lubridate - labs"
+output: html_notebook
+---
+
+# Practicamos con Lubridate
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(nycflights13)
+```
+
+```{r}
+today()
+```
+
+```{r}
+now()
+```
+
+
+## La función de Lubridate `ymd`
+
+```{r}
+# Transformar fehcas en formato cadena de texto
+ymd("2020-11-21")
+```
+
+```{r}
+mdy("November 21th, 2020")
+```
+
+```{r}
+dmy("21-November-2020")
+```
+
+```{r}
+ymd(20201121)
+```
+
+
+## Función Lubridate `ymd_hms`
+
+```{r}
+ymd_hms("2020-11-21 13:50:11")
+```
+
+```{r}
+mdy_hm("11/21/2020 13:50")
+```
+
+```{r}
+ymd_hms("2020-11-21 13:50:11", tz = "Europe/Madrid")
+```
+
+
+```{r}
+ymd("2020-11-31", tz = "CET") # investigad....
+```
+
+
+```{r}
+ymd("2020-11-21", tz = "CET")
+```
+
+
+```{r}
+ymd(20201121, tz = "Europe/Madrid")
+```
+
+
+```{r}
+flights %>%
+  select(year, month, day, hour, minute)
+```
+
+
+```{r}
+
+```
+
