@@ -1,0 +1,213 @@
+---
+title: 'Minería de datos: mod01'
+author: "Autor: Nombre estudiante"
+date: "noviembre 2020"
+output:
+  html_document:
+    highlight: default
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_depth: 2
+  pdf_document:
+    highlight: zenburn
+    toc: yes
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+******
+# Introducción
+******
+
+## Descripción de la PRÁCTICA a realizar
+La prueba está estructurada en 1 ejercicio teórico/práctico y 1 ejercicio práctico que pide que se desarrolle la fase de preparación en un juego de datos.  
+Deben responderse todos los ejercicios para poder superar la PRA.  
+
+## Recursos
+Para realizar esta práctica recomendamos la lectura de los siguientes documentos:  
+
+* RStudio Cheat Sheet: Disponible en el aula Laboratorio de Minería de datos.  
+* R Base Cheat Sheet: Disponible en el aula Laboratorio de Minería de datos.  
+
+*****
+# Enunciado  
+******
+Como ejemplo, trabajaremos con el conjunto de datos "Titanic" que recoge datos sobre el famoso crucero y sobre el que es fácil realizar tareas de clasificación predictiva sobre la variable "Survived".   
+
+De momento dejaremos para las siguientes prácticas el estudio de algoritmos predictivos y nos centraremos por ahora en el estudio de las variables de una muestra de datos, es decir, haremos un trabajo descriptivo del mismo. 
+
+Las actividades que llevaremos a cabo en esta práctica suelen enmarcarse en las fases iniciales de un proyecto de minería de datos y consisten en la selección de caraterísticas o variables y la preparación del los  datos para posteriormente ser consumido por un algoritmo.
+
+Las técnicas que trabajaremos son las siguientes:  
+
+1. Normalización  
+2. Discretización  
+3. Gestión de valores nulos  
+4. Estudio de correlaciones  
+5. Reducción de la dimensionalidad
+6. Análisis visual del conjunto de datos  
+
+******
+# Ejemplo de estudio visual con el juego de datos Titanic
+******
+
+## Procesos de limpieza del conjunto de datos
+
+Primer contacto con el conjunto de datos, visualizamos su estructura.  
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Cargamos los paquetes R que vamos a usar
+library(ggplot2)
+library(dplyr)
+
+# Guardamos el conjunto de datos test y train en un único dataset
+test <- read.csv('titanic-test.csv',stringsAsFactors = FALSE)
+train <- read.csv('titanic-train.csv', stringsAsFactors = FALSE)
+
+# Unimos los dos conjuntos de datos en uno solo
+totalData <- bind_rows(train,test)
+filas=dim(train)[1]
+
+# Verificamos la estructura del conjunto de datos
+str(totalData)
+```
+
+Trabajamos los atributos con valores vacíos.  
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Estadísticas de valores vacíos
+colSums(is.na(totalData))
+colSums(totalData=="")
+
+# Tomamos valor "C" para los valores vacíos de la variable "Embarked"
+totalData$Embarked[totalData$Embarked==""]="C"
+
+# Tomamos la media para valores vacíos de la variable "Age"
+totalData$Age[is.na(totalData$Age)] <- mean(totalData$Age,na.rm=T)
+```
+
+Discretizamos cuando tiene sentido y en función de cada variable.  
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# ¿Con qué variables tendría sentido un proceso de discretización?
+apply(totalData,2, function(x) length(unique(x)))
+
+# Discretizamos las variables con pocas clases
+cols<-c("Survived","Pclass","Sex","Embarked")
+for (i in cols){
+  totalData[,i] <- as.factor(totalData[,i])
+}
+
+# Después de los cambios, analizamos la nueva estructura del conjunto de datos
+str(totalData)
+```
+
+
+## Procesos de análisis del conjunto de datos
+
+Nos proponemos analizar las relaciones entre las diferentes variables del conjunto de datos.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Visualizamos la relación entre las variables "sex" y "survival":
+ggplot(data=totalData[1:filas,],aes(x=Sex,fill=Survived))+geom_bar()
+
+# Otro punto de vista. Survival como función de Embarked:
+ggplot(data = totalData[1:filas,],aes(x=Embarked,fill=Survived))+geom_bar(position="fill")+ylab("Frecuencia")
+
+```
+
+Obtenemos una matriz de porcentages de frecuencia.  
+Vemos, por ejemplo que la probabilidad de sobrevivir si se embarcó en "C" es de un 55,88%
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+t<-table(totalData[1:filas,]$Embarked,totalData[1:filas,]$Survived)
+for (i in 1:dim(t)[1]){
+    t[i,]<-t[i,]/sum(t[i,])*100
+}
+t
+```
+
+Veamos ahora como en un mismo gráfico de frecuencias podemos trabajar con 3 variables: Embarked, Survived y Pclass.  
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Ahora, podemos dividir el gráfico de Embarked por Pclass:
+ggplot(data = totalData[1:filas,],aes(x=Embarked,fill=Survived))+geom_bar(position="fill")+facet_wrap(~Pclass)
+```
+
+Comparemos ahora dos gráficos de frecuencias: Survived-SibSp y Survived-Parch
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Survivial como función de SibSp y Parch
+ggplot(data = totalData[1:filas,],aes(x=SibSp,fill=Survived))+geom_bar()
+ggplot(data = totalData[1:filas,],aes(x=Parch,fill=Survived))+geom_bar()
+# Vemos como las forma de estos dos gráficos es similar. Este hecho nos puede indicar presencia de correlaciones altas.
+```
+
+Veamos un ejemplo de construcción de una variable nueva: Tamaño de familia
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+
+# Construimos un atributo nuevo: family size.
+totalData$FamilySize <- totalData$SibSp + totalData$Parch +1;
+totalData1<-totalData[1:filas,]
+ggplot(data = totalData1[!is.na(totalData[1:filas,]$FamilySize),],aes(x=FamilySize,fill=Survived))+geom_histogram(binwidth =1,position="fill")+ylab("Frecuencia")
+
+# Observamos como familias de entre 2 y 6 miembros tienen más del 50% de posibilidades de supervivencia.  
+```
+
+Veamos ahora dos gráficos que nos compara los atributos Age y Survived.  
+Observamos como el parámetro position="fill" nos da la proporción acumulada de un atributo dentro de otro
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Survival como función de age:
+ggplot(data = totalData1[!(is.na(totalData[1:filas,]$Age)),],aes(x=Age,fill=Survived))+geom_histogram(binwidth =3)
+ggplot(data = totalData1[!is.na(totalData[1:filas,]$Age),],aes(x=Age,fill=Survived))+geom_histogram(binwidth = 3,position="fill")+ylab("Frecuencia")
+```
+
+
+
+******
+# Ejercicios
+******
+
+## Ejercicio 1: 
+
+Estudia los tres casos siguientes y contesta, de forma razonada la  pregunta que se realiza:
+
+* Disponemos de un conjunto de variables referentes a vehículos, tales como la marca, modelo, año de matriculación, etc. También se dispone del precio al que se vendieron. Al poner a la venta a un nuevo vehículo, se dispone de las variables que lo describen, pero se desconoce el precio. ¿Qué tipo de algoritmo se debería aplicar para predecir de forma automática el precio?
+
+* En un almacén de naranjas se tiene una máquina, que de forma automática obtiene un conjunto de variables de cada naranja, como su tamaño, acidez, grado maduración, etc. Si se desea estudiar las naranjas por tipos, según las variables obtenidas, ¿qué tipo de algoritmo es el más adecuado?
+
+* Un servicio de música por internet dispone de los historiales de audición de sus clientes: Qué canciones y qué grupos eligen los clientes a lo largo del tiempo de sus escuchas. La empresa desea crear un sistema  que proponga la siguiente canción y grupo en función de la canción que se ha escuchado antes. ¿Qué tipo de algoritmo es el más adecuado?
+
+### Respuesta 1:
+> Escribe aquí la respuesta a la pregunta
+
+## Ejercicio 2:  
+A partir del conjunto de datos disponible en el siguiente enlace http://archive.ics.uci.edu/ml/datasets/Adult , realiza un estudio tomando como propuesta inicial al que se ha realizado con el conjunto de datos "Titanic". Amplia la propuesta generando nuevos indicadores o solucionando otros problemas expuestos en el módulo 2. Explica el proceso que has seguido, qué conocimiento obtienes de los datos, qué objetivo te has fijado y detalla los pasos, técnicas usadas y los problemas resueltos.
+
+Nota: Si lo deseas puedes utilizar otro conjunto de datos propio o de algun repositorio open data siempre que sea similar en diversidad de tipos de variables al propuesto. 
+
+### Respuesta 2:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Cargamos el juego de datos
+datosAdult <- read.csv('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data',stringsAsFactors = FALSE, header = FALSE)
+
+# Nombres de los atributos
+names(datosAdult) <- c("age","workclass","fnlwgt","education","education-num","marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hour-per-week","native-country","income")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Redacta aquí el código R para el estudio del juego de datos Adult
+
+
+
+
+
+```
+

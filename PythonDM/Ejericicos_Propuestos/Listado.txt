@@ -1,0 +1,1 @@
+Billetesde_200,Billetesde_100,Billetesde_50,Billetesde_20,Hora,Usuario

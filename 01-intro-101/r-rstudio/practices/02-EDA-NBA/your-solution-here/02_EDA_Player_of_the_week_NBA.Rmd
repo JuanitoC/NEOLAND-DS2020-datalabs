@@ -239,7 +239,7 @@ nba['Tiempo'] <- nba['Season.short']-nba['Draft.Year']
 
 ## 3.7 ¿Cual es el número de años que más veces se repite entre que salen elegidos en el draft y se proclaman mejores jugadores? (moda de la variable tiempo)
 ```{r}
-# 7 años es el valor que más se repite con una frecuencia de 141
+# 7 aAños es el valor que más se repite con una frecuencia de 141
 
 moda <- table(nba$Tiempo)
 moda[which.max(moda)]
@@ -263,7 +263,7 @@ DF_CM <- filter(nba,str_detect(Height,"-")==FALSE) %>%
 ## En esta operación selecciono las filas con altura en sistema imperial (SI), separo la variable altura en 2, pies y pulgadas y procedo a calcular la altura en sistema metrico, posteriormente elimino las columnas pies y pulgadas
 DF_FT <- filter(nba,str_detect(Height,"-")==TRUE) %>% 
           separate(Height,c("Ft","Inc"),sep = "-") %>%
-          mutate( Height = round(as.numeric(Ft)*30.34 + as.numeric(Inc)*2.54,0)
+          mutate( Height = round(as.numeric(Ft)*30.48 + as.numeric(Inc)*2.54,0)
                 ) %>% select(-Ft,-Inc) 
 
 str(DF_FT)
@@ -329,8 +329,25 @@ nba$Position[nba$Position =='C' ] = 'Center'
 
 unique(nba$Position)
 
+nba$Position <-
+
 
 ```
+
+
+
+
+```{r}
+### Transformar los textos con mapvalue
+library(plyr)
+nba$Position<-mapvalues(nba$Position, from = c("F-C", "FC","G-F","GF"), to = c("F", "F","G","G"))
+nba$Position<-mapvalues(nba$Position, from = c("F", "G","PG","SG","SF","PF","C"), to = c("Forward", "Guard","Point Guard","Shooting Guard","Small Forward","Power Forward","Center"))
+position.sort <- sort( table(nba$Position), decreasing=TRUE )
+position.top <- position.sort[1]
+  position.top.name <- names( position.top )
+  position.top.name
+```
+
 
 
 ## 4.2 ¿En que posición ha sido más veces los jugadores de la semana nombrados?
@@ -391,7 +408,8 @@ rm(Top10shortplayers)
 
 Top10tallplayers <- Players[order(Players$Height,decreasing = TRUE),]
 
-Top10tallplayers[1:10,]
+
+Top10tallplayers[1:10,c(1,3)]
 
 rm(Top10tallplayers)
 
@@ -407,12 +425,13 @@ rm(Top10tallplayers)
 
 ## Mediante un histograma veo que los datos excepcionales son <150 y >272
 
-hist(nba$Weight)
-table(nba$Weight)
+outliers = boxplot(nba$Weight)$out
 
-nba.avg = filter(nba,Weight>150 & Weight<272 ) %>% select(Weight)
+
+nba.avg = filter(nba,Weight %in% outliers==FALSE ) %>% select(Weight)
 nba.unique <-  select(nba,Weight)
-
+hist(nba$Weight)
+hist(nba.avg$Weight)
 
 ```
 
@@ -420,8 +439,8 @@ nba.unique <-  select(nba,Weight)
 ## 6.2 Comparar los boxplots de los datos originales en nba.unique y de los datos del peso de nba.avg
 ```{r}
 
-ggplot(nba.avg,aes(y=Weight))+geom_boxplot() + ylim(150,500)
-ggplot(nba.unique,aes(y=Weight))+geom_boxplot() + ylim(150,500)
+ggplot(nba.avg,aes(y=Weight))+geom_boxplot() + ylim(150,350)
+ggplot(nba.unique,aes(y=Weight))+geom_boxplot() + ylim(150,350)
 
 rm(nba.avg,nba.unique)
 ```
@@ -516,7 +535,6 @@ str(Players$Altura)
 
 ## 7.5 Hacer un listado con el nombre de jugadores que tienen una altura ‘normal’ y un peso ‘alto’. Ordenar alfabéticamente por nombre.
 ```{r}
-
 
 AltNormalPesoAltoAlfa <- filter(Players,Peso=='normal'&Altura =='alto') 
 AltNormalPesoAltoAlfa[order(AltNormalPesoAltoAlfa$Player,decreasing=FALSE),]
