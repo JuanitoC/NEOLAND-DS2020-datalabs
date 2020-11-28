@@ -49,6 +49,8 @@ El dataset disponible y actualizado cada hora reportando los datos de los últim
 
 ```{r, message = FALSE, echo = FALSE}
 # Creamos el dataset del fichero de las estaciones de Gijon de los últimos 7 días (actualizado a fecha 8 de abril)
+
+# Observar si existe un formato fecha y time...para cálculo del time-series
 dataset_gijon <- read.csv("http://opendata.gijon.es/descargar.php?id=1&tipo=CSV", encoding = 'UTF-8', stringsAsFactors = FALSE)
 
 # Veamos los 10 primeros resultados
@@ -59,7 +61,7 @@ head(dataset_gijon[18:22], 10)
 # Totalizamos los datos resultantes
 dim(dataset_gijon)
 ```
-```
+
 
 ```{r}
 # Realizamos una copia del dataset original y con un header personalizado sin caracteres especiales
@@ -96,11 +98,17 @@ str(gijon_lastWeek)
 # Minute = M
 # Segundos = S
 
-gijon_lastWeek$Fecha_UTC <- ymd_hms(gijon_lastWeek$Fecha_UTC, quiet = FALSE, tz = "")
+gijon_lastWeek$Fecha_UTC <- ymd(gijon_lastWeek$Fecha_UTC, tz = "Europe/Madrid")
 
 gijon_lastWeek$Date <- format(gijon_lastWeek$Fecha_UTC, "%Y-%m-%d")
 gijon_lastWeek$Time <- format(gijon_lastWeek$Fecha_UTC, "%T")
-gijon_lastWeek$Date <- as.POSIXct(gijon_lastWeek$Date, format = "%Y-%m-%d")
+
+# Este formato tiene un formato calendar-time
+gijon_lastWeek$DatePOSIXct <- as.POSIXct(gijon_lastWeek$Date, format = "%Y-%m-%d")
+
+# Alternativa con POSIXlt (lista de vectores y al parecer debería ser Human-friendly)
+gijon_lastWeek$DatePOSIXlt <- as.POSIXlt(gijon_lastWeek$Date, format = "%Y-%m-%d")
+
 
 # crear : day, month, year, hour, weekday, ...
 
