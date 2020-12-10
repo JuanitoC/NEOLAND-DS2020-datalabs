@@ -86,7 +86,304 @@ flights %>%
 flights %>%
   select(year, month, day, hour, minute) %>%
   mutate(
-    departure = make_datetime(year, month, day, hour, minute)
+  departure = make_datetime(year, month, day, hour, minute, tz='GMT')
   )
 ```
+
+
+```{r}
+# Probamos con POSIXlt
+```
+
+
+```{r}
+# Crear la transformación del datetime en variables dep_time y arr_time
+make_datetime_100 <- function(year, month, day, time){
+  make_datetime(year, month, day, time %/% 100, time %% 100)
+}
+```
+
+
+```{r}
+flights_dt <- flights %>%
+  filter(!is.na(dep_time), !is.na(arr_time)) %>%
+  mutate(
+    dep_time = make_datetime_100(year, month, day, dep_time),
+    arr_time = make_datetime_100(year, month, day, arr_time),
+    sched_dep_time = make_datetime_100(
+      year, month, day, sched_dep_time
+    ),
+    sched_arr_time = make_datetime_100(
+      year, month, day, sched_arr_time
+    ),
+    air_time = make_datetime_100(year, month, day, air_time)
+  ) %>%
+  select(origin, dest, ends_with("delay"), ends_with("time"))
+```
+
+
+```{r}
+# Visualizamos los datos ggplot2
+flights_dt %>%
+  ggplot(aes(dep_time)) +
+  geom_freqpoly(binwidth = 86400) # este valor se corresponde a los segundos de un día
+```
+
+
+```{r}
+# Visualizamos por día
+flights_dt %>%
+  filter(dep_time < ymd(20130102)) %>%
+  ggplot(aes(dep_time)) + 
+  geom_freqpoly(binwidth = 600) # son segundos igual a 10 minutos
+```
+
+
+## Transformación de otro tipo de formato fecha
+
+```{r}
+as_datetime(today())
+```
+
+```{r}
+as_date(now())
+```
+
+```{r}
+# En muchos casos tenemos un formato del tipo UNIX - 1970-01-01
+as_datetime(60 * 60 * 10)
+```
+
+```{r}
+as_date(365 * 10 + 2)
+```
+
+
+## Componentes de un `date-time`
+
+```{r}
+datetime <- ymd_hms("2020-11-28 13:20:16")
+datetime
+```
+
+```{r}
+# transformar en anyos
+year(datetime)
+# transformamos en mes
+month(datetime)
+# transformamos en día
+mday(datetime)
+# transformamos en día del anyo
+yday(datetime)
+# en día de la semana
+wday(datetime)
+```
+
+
+```{r}
+# podemos asignarle atributos a month() de forma literal
+month(datetime, label = TRUE)
+```
+
+
+
+```{r}
+# podemos asignarle atributos a wday() de forma literal
+wday(datetime, label = TRUE)
+# días de la semana de DOM - LUN por defecto 
+wday(datetime, label = TRUE, abbr = FALSE)
+# días de la semana de LUN - DOM
+wday(datetime, label = TRUE, abbr = FALSE, locale = "Italian", week_start = 1)
+# meses del año 
+month(datetime, label = TRUE, abbr = FALSE, locale = "French")
+```
+
+
+```{r}
+# Visualizamos los días de la semana aplicado a flights
+flights_dt %>%
+  mutate(wday = wday(dep_time, label = TRUE, abbr = FALSE, locale = 'german', week_start = 1)) %>%
+  ggplot(aes(x = wday)) +
+  geom_bar()
+```
+
+
+## Representación de los vuelos con retraso
+
+```{r}
+flights_dt %>%
+  mutate(minute = minute(dep_time)) %>%
+  group_by(minute) %>%
+  summarize(
+    avg_delay = mean(arr_delay, na.rm = TRUE),
+    n = n()) %>%
+  ggplot(aes(minute, avg_delay)) +
+  geom_line()
+```
+
+
+
+```{r}
+sched_dep <- flights_dt %>%
+  mutate(minute = minute(sched_dep_time)) %>%
+  group_by(minute) %>%
+  summarize(
+    avg_delay = mean(arr_delay, na.rm = TRUE),
+    n = n())
+  ggplot(sched_dep, aes(minute, avg_delay)) +
+  geom_line()
+```
+
+
+## Duration, Periods, Intervals
+
+```{r}
+# Duration es igual a la diferencia entre fecha actual (periodo) y fecha inicio
+age <- today() - ymd(19800101)
+age
+```
+
+```{r}
+as.duration(age) # esta función siempre devolverá los segundos de duración
+```
+
+
+```{r}
+# Separamos por componentes del tiempo
+dseconds(15)
+dminutes(10)
+dhours(c(12,14))
+```
+
+```{r}
+ddays(0:5)
+
+dweeks(3)
+
+dyears(1)
+```
+ 
+ 
+## Realizamos operaciones con los periodos, intervalos
+ 
+```{r}
+#realizamos operaciones
+2 * dyears(1)
+
+```
+```{r}
+dyears(1)+dweeks(12)+ dhours(15)
+
+```
+
+```{r}
+today()
+now()
+```
+
+```{r}
+last_year<- today() - dyears(1)
+last_year
+```
+```{r}
+dweeks(dyears(1))
+dyears(1)
+years(1)
+```
+
+```{r}
+60*60*6
+31557600-31536000
+```
+## Conversiones de zonas horarias
+```{r}
+one_pm <- ymd_hms(
+  "2020-11-30 13:00:25",
+  tz = "Europe/Madrid"
+  )
+one_pm
+```
+```{r}
+flights_dt %>%
+  filter(arr_time < dep_time)
+```
+
+```{r}
+# Transformamos los datos creando una nueva columna overnight
+
+flights_dt <- flights_dt %>%
+  mutate(
+    overnight = arr_time < dep_time,
+    arr_time = arr_time + days(overnight*1),
+    sched_arr_time = sched_arr_time + days(overnight *1)
+  )
+```
+
+
+```{r}
+# Comprobamos que ya no existen esas diferencias
+flights_dt %>%
+  filter(overnight, arr_time < dep_time)
+```
+```{r}
+flights_dt %>%
+  filter(origin == 'EWR'& dest == "BQN")
+```
+
+
+### Intervalos
+```{r}
+years(1) / days(1)
+```
+```{r}
+next_year <- today() + years(1)
+next_year
+```
+```{r}
+(today() %--% next_year)/dweeks(1)
+```
+```{r}
+(today()%--% next_year)/ months(1)
+```
+## time zones
+```{r}
+Sys.timezone()
+Sys.time()
+Sys.Date()
+```
+
+```{r}
+length(OlsonNames())
+```
+
+```{r}
+head(OlsonNames())
+
+```
+
+
+```{r}
+a <- ymd_hms("2020-11-30 12:00:00", tz = "Europe/Madrid")
+b <- ymd_hms("2020-11-30 12:00:00", tz = "Australia/Sydney")
+c <- ymd_hms("2020-11-30 12:00:00", tz = "America/New_York")
+
+```
+
+```{r}
+d <-c(a,b,c)
+d
+```
+```{r}
+prueba <- with_tz(d, tzone = "Asia/Tokyo")
+```
+
+
+# El resultado nos devolverá cero porque aplica el cambio de zona horaria
+
+```{r}
+# con force_tz cambia la etiqueta tz pero no el horario y fecha
+prueba_b <- force_tz(d, tzone = 'Asia/Tokyo')
+prueba_b
+```
+
 

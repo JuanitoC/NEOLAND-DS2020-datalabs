@@ -1,0 +1,77 @@
+---
+title: "Dashboard"
+author: "Neoland"
+date: "9 de diciembre de 2020"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+gc()
+cat("\014")
+```
+
+
+```{r}
+
+PDF <- read.csv('Pokemon.csv')
+
+PDFC <- read.csv('pokemon_go_captures.csv')
+
+summary(PDF)
+
+PDF['napa'] <- '0'
+
+ggplot(data = PDF)+
+  geom_point(mapping = aes(x = Type.1, y = Total,color=Generation,shape=Type.2))+facet_grid(Generation~napa)
+  #facet_wrap(drv ~cyl)
+
+
+
+```
+```{r}
+# Tabla 
+table(PDF$Generation,PDF$Type.1)
+```
+# Busco alguna correlación entre las variables para comprender la bajada de NO y NO2
+
+```{r}
+library(stats)
+library(reshape2)
+# creo una matriz de correlación
+
+Matcor <- cor(PDF[,c("Total","HP","Attack","Defense","Sp..Atk","Sp..Def","Speed","Generation")])
+
+melted_Matcor <- melt(Matcor)
+
+library(ggplot2)
+ggplot(data = melted_Matcor, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+```
+
+```{r}
+names(PDF)
+```
+
+
+
+
+
+```{r}
+## Esta matriz da poca información, y es poco visual así que creo una matriz en la sólo figuren las correlaciones fuertes.
+
+
+melted_Matcor['Value2'] = 0
+
+melted_Matcorpos <- melted_Matcor %>% mutate (Value2 = ifelse(value %in% -0.70:0.70,0,Value2),
+                                              Value2 = ifelse(value < -0.70,-1,Value2),
+                                              Value2 = ifelse(value > 0.70,1,Value2)
+                                              )
+
+
+ggplot(data = melted_Matcorpos, aes(x=Var1, y=Var2, fill=Value2)) + 
+ggtitle('Correlacion')+    
+  geom_tile()
+
+

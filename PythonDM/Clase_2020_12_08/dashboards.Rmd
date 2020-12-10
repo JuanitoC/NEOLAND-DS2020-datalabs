@@ -1,0 +1,779 @@
+---
+title: "Dashboard"
+author: "Neoland"
+date: "9 de diciembre de 2020"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+gc()
+cat("\014")
+```
+
+
+
+### Librerias
+```{r librerias,echo=TRUE,eval=FALSE}
+library(dplyr)
+library(lubridate)
+# install.packages("shinydashboard")
+library(shiny)
+library(shinydashboard)
+```
+
+
+# Dashboard
+<div class="example">
+Un dashboard tiene tres partes
+
+* Cabezara.
+* Barra Lateral.
+* Cuerpo.
+
+
+</div>
+*** 
+## Primeros Pasos
+
+### Paso 1
+<div class="shiny">
+Se deberá crear el script que contendrá los dos objetos ui y server. Se deberá hacer referencia a estos dos objetos dentro del script siguiendo exactamente dicha nomenclatura.
+
+  * **ui** definirá la interfaz gráfica de la aplicación. Este objeto consistirá de las tres partes que conforman el cuadro de mando.
+  
+  Las funciones que definirán estos tres entornos son:
+```{r comienzo, eval=FALSE}
+dashboardPage(
+  dashboardHeader(),
+  dashboardSidebar(),
+  dashboardBody()
+)
+```
+
+
+  * **server** será servidor de la aplicación. Es decir, todos los análisis, operaciones y gráficos que se muestren en el body document se deberán programar en este objeto.
+
+
+Automáticamente se abrirá en el navegador una nueva pestaña https://localhost:XXXX/ y se iniciará la APP. 
+
+```{r shiny,eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(),
+  dashboardSidebar(),
+  dashboardBody()
+)
+
+server <- function(input, output) { }
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+### Paso 2
+Es agregar contenido al User Interface del dashboard.
+
+#### Cabecera
+<div class="example">
+```{r Cabecera,eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(),
+  dashboardBody()
+  )
+
+server <- function(input, output) { }
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+#### Cuerpo
+<div class="example">
+Introduciremos por ejemplo un Histograma
+
+```{r cuerpo, eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(),
+  dashboardBody(
+    # 
+    fluidRow(
+      box(plotOutput("plot1", height = 250))
+    )
+  )
+)
+
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    hist(histdata,xlab="frecuencia",ylab="datos",main="")
+  })
+}
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+<div class="example">
+Podriamos introducir un control
+```{r cuerpo1, eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(),
+  dashboardBody(
+    # 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )
+  )
+)
+
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+}
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+#### Barra Lateral
+<div class="example">
+Nosotros podemos añadir una barra lateral, que contenga varios menus
+
+```{r Barra_Lateral, eval=FALSE}
+
+##contenido barra lateral
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  )
+```
+*** 
+
+```{r barr_lateral1, eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    # 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )
+  )
+)
+
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+}
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+<div class="example">
+Vamos a introducir a cada menu algo
+```{r barr_lateral2, eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "principal", 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )),
+    tabItem(tabName = "widgets",
+        h2("Introducimos cosas")
+      )
+  )
+)
+)
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+}
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+<div class="example">
+Vamos a introducir valores estáticos
+```{r valores_estaticos, eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "principal", 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )),
+    tabItem(tabName = "widgets",
+        fluidRow(
+      # Una caja de valores estaticos
+      valueBox(10 * 2, "Valores", icon = icon("credit-card")) 
+    )
+        
+      )
+  )
+)
+)
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+  
+}
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+## Valores Dinamicos
+<div class="example">
+```{r valores_dinamicos, eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "principal", 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )),
+    tabItem(tabName = "widgets",
+        fluidRow(
+      # Una caja de valores estaticos
+      valueBox(10 * 2, "Valores", icon = icon("credit-card")),
+      valueBoxOutput("Cuartil1")
+      
+    )
+        
+      )
+  )
+)
+)
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+   output$Cuartil1 <- renderValueBox({
+    valueBox(
+      paste0(round(quantile(histdata,0.25),2), "%"), "Q1", icon = icon("list"),
+      color = "purple"
+    )
+  })
+  
+}
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+```{r valores_dinamicos2, eval=FALSE}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "principal", 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )),
+    tabItem(tabName = "widgets",
+        fluidRow(
+      # Una caja de valores estaticos
+      valueBox(10 * 2, "Valores", icon = icon("credit-card")),
+      valueBoxOutput("Cuartil1"),
+      valueBoxOutput("Contento")
+      
+    )
+        
+      )
+  )
+)
+)
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+   output$Cuartil1 <- renderValueBox({
+    valueBox(
+      paste0(round(quantile(histdata,0.25),2), "%"), "Q1", icon = icon("list"),
+      color = "purple"
+    )
+  })
+output$Contento <- renderValueBox({
+    valueBox(
+      "80%", "Feliz con el Grupo", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "yellow"
+    )
+  })  
+}
+
+shinyApp(ui, server)
+```
+
+
+</div>
+*** 
+
+# Menu Interactivo
+## Menu Mensajes
+<div class="example">
+
+```{r menu_interactivo, eval=FALSE}
+
+dropdownMenu(type = "messages",
+  messageItem(
+    from = "Notas",
+    message = "Notas de Alumnos."
+  ),
+  messageItem(
+    from = "New User",
+    message = "How do I register?",
+    icon = icon("question"),
+    time = "13:45"
+  ),
+  messageItem(
+    from = "Support",
+    message = "The new server is ready.",
+    icon = icon("life-ring"),
+    time = "2014-12-01"
+  )
+)
+```
+
+```{r Mund_dinamico_2, eval=FALSE}
+ui <- dashboardPage(
+  #dashboardHeader(title = "Dashboard"),
+  dashboardHeader(title = "Dashboard",dropdownMenu(type = "messages",
+  messageItem(
+    from = "Notas",
+    message = "Notas de Alumnos."
+  ),
+  messageItem(
+    from = "Duda Alumno",
+    message = "¿Cuándo es el examen?",
+    icon = icon("question"),
+    time = "18:45"
+  ),
+  messageItem(
+    from = "Aviso de Clase",
+    message = "La clase comenzará en 5 min.",
+    icon = icon("life-ring"),
+    time = "2020-12-09"
+  )
+)),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "principal", 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )),
+    tabItem(tabName = "widgets",
+        fluidRow(
+      # Una caja de valores estaticos
+      valueBox(10 * 2, "Valores", icon = icon("credit-card")),
+      valueBoxOutput("Cuartil1"),
+      valueBoxOutput("Contento")
+      
+    )
+        
+      )
+  )
+)
+)
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+   output$Cuartil1 <- renderValueBox({
+    valueBox(
+      paste0(round(quantile(histdata,0.25),2), "%"), "Q1", icon = icon("list"),
+      color = "purple"
+    )
+  })
+output$Contento <- renderValueBox({
+    valueBox(
+      "80%", "Feliz con el Grupo", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "yellow"
+    )
+  })
+
+}
+
+shinyApp(ui, server)
+```
+</div>
+*** 
+### Contenido Dinamico
+<div class="example">
+para que tengamos un contenido diámico solo tendremos que:
+
+
+```{r contenido_dinamico, eval=FALSE}
+## el siguiente comando lo pondremos en el dashboard page 
+dashboardHeader(dropdownMenuOutput("Menu_mesanje"))
+
+## Este comando en el output
+output$Menu_mesanje <- renderMenu({
+  # DATAMENSAJE será el dataframe que leemos
+  msgs <- apply(DATAMENSAJE, 1, function(row) {
+    messageItem(from = row[["from"]], message = row[["message"]])
+  })
+
+  # This is equivalent to calling:
+  #   dropdownMenu(type="messages", msgs[[1]], msgs[[2]], ...)
+  dropdownMenu(type = "messages", .list = msgs)
+})
+```
+
+</div>
+*** 
+
+## Menu Notificaciones
+<div class="example">
+```{r Notificacion_Menu, eval=FALSE}
+dropdownMenu(type = "notifications",
+  notificationItem(
+    text = "8 Alumnos en clase",
+    icon("users")
+  ),
+  notificationItem(
+    text = "6 Alumnos que están contento con el profesor",
+    icon("truck"),
+    status = "success"
+  ),
+  notificationItem(
+    text = "25% de los alumnos no están contentos con el profesor",
+    icon = icon("exclamation-triangle"),
+    status = "warning"
+  )
+)
+```
+
+```{r Menu_dinamico_2, eval=FALSE}
+ui <- dashboardPage(
+  #dashboardHeader(title = "Dashboard"),
+  dashboardHeader(title = "Dashboard",
+        dropdownMenu(type = "messages",
+                  messageItem(
+                        from = "Notas",
+                        message = "Notas de Alumnos."
+                            ),
+                  messageItem(
+                        from = "Duda Alumno",
+                        message = "¿Cuándo es el examen?",
+                        icon = icon("question"),
+                        time = "18:45"
+                            ),
+                  messageItem(
+                        from = "Aviso de Clase",
+                        message = "La clase comenzará en 5 min.",
+                        icon = icon("life-ring"),
+                        time = "2020-12-09"
+                      )
+                  ),
+        dropdownMenu(type = "notifications",
+          notificationItem(
+            text = "8 Alumnos en clase",
+            icon("users")
+          ),
+          notificationItem(
+            text = "6 Alumnos que están contento con el profesor",
+            icon("truck"),
+            status = "success"
+          ),
+          notificationItem(
+            text = "25% de los alumnos no están contentos con el     profesor",
+            icon = icon("exclamation-triangle"),
+            status = "warning"
+          )
+        )
+),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "principal", 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )),
+    tabItem(tabName = "widgets",
+        fluidRow(
+      # Una caja de valores estaticos
+      valueBox(10 * 2, "Valores", icon = icon("credit-card")),
+      valueBoxOutput("Cuartil1"),
+      valueBoxOutput("Contento")
+      
+    )
+        
+      )
+  )
+)
+)
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+   output$Cuartil1 <- renderValueBox({
+    valueBox(
+      paste0(round(quantile(histdata,0.25),2), "%"), "Q1", icon = icon("list"),
+      color = "purple"
+    )
+  })
+output$Contento <- renderValueBox({
+    valueBox(
+      "80%", "Feliz con el Grupo", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "yellow"
+    )
+  })
+
+}
+
+shinyApp(ui, server)
+```
+
+</div>
+***
+<div class="example">
+También podemos poner una menu de tareas
+```{r menutareas,eval=FALSE}
+dropdownMenu(type = "tasks", badgeStatus = "success",
+  taskItem(value = 90, color = "green",
+    "Fin del año 2020"
+  ),
+  taskItem(value = 17, color = "aqua",
+    "Proceso de proyectos"
+  ),
+  taskItem(value = 75, color = "yellow",
+    "Fin de curso"
+  ),
+  taskItem(value = 80, color = "red",
+    "Fin de clase"
+  )
+)
+
+```
+
+```{r Menu_dinamico_3, eval=FALSE}
+ui <- dashboardPage(
+  #dashboardHeader(title = "Dashboard"),
+  dashboardHeader(title = "Dashboard",
+        dropdownMenu(type = "messages",
+                  messageItem(
+                        from = "Notas",
+                        message = "Notas de Alumnos."
+                            ),
+                  messageItem(
+                        from = "Duda Alumno",
+                        message = "¿Cuándo es el examen?",
+                        icon = icon("question"),
+                        time = "18:45"
+                            ),
+                  messageItem(
+                        from = "Aviso de Clase",
+                        message = "La clase comenzará en 5 min.",
+                        icon = icon("life-ring"),
+                        time = "2020-12-09"
+                      )
+                  ),
+        dropdownMenu(type = "notifications",
+          notificationItem(
+            text = "8 Alumnos en clase",
+            icon("users")
+          ),
+          notificationItem(
+            text = "6 Alumnos que están contento con el profesor",
+            icon("truck"),
+            status = "success"
+          ),
+          notificationItem(
+            text = "25% de los alumnos no están contentos con el     profesor",
+            icon = icon("exclamation-triangle"),
+            status = "warning"
+          )
+        ),
+        dropdownMenu(type = "tasks", badgeStatus = "success",
+  taskItem(value = 90, color = "green",
+    "Fin del año 2020"
+  ),
+  taskItem(value = 17, color = "aqua",
+    "Proceso de proyectos"
+  ),
+  taskItem(value = 75, color = "yellow",
+    "Fin de curso"
+  ),
+  taskItem(value = 80, color = "red",
+    "Fin de clase"
+  )
+)
+),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Principal", tabName = "principal", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "principal", 
+    fluidRow(
+      box(plotOutput("plot1", height = 250)),
+      box(
+        title = "Control",
+        sliderInput("slider", "Numero de observaciones:", 1, 100, 50)
+      )
+    )),
+    tabItem(tabName = "widgets",
+        fluidRow(
+      # Una caja de valores estaticos
+      valueBox(10 * 2, "Valores", icon = icon("credit-card")),
+      valueBoxOutput("Cuartil1"),
+      valueBoxOutput("Contento")
+      
+    )
+        
+      )
+  )
+)
+)
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data,xlab="frecuencia",ylab="datos",main="")
+  })
+   output$Cuartil1 <- renderValueBox({
+    valueBox(
+      paste0(round(quantile(histdata,0.25),2), "%"), "Q1", icon = icon("list"),
+      color = "purple"
+    )
+  })
+output$Contento <- renderValueBox({
+    valueBox(
+      "80%", "Feliz con el Grupo", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "yellow"
+    )
+  })
+
+}
+
+shinyApp(ui, server)
+```
+</div>
+***

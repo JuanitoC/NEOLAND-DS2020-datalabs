@@ -30,7 +30,7 @@ datosAdult <- read.csv('http://archive.ics.uci.edu/ml/machine-learning-databases
 
 
 # Nombres de los atributos
-names(datosAdult) <- c("age","workclass","fnlwgt","education","education-num","marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hour-per-week","native-country","income")
+names(datosAdult) <- c("age","workclass","fnlwgt","education","education.num","marital.status","occupation","relationship","race","sex","capital.gain","capital.loss","hour.per.week","native.country","income")
 
 
 
@@ -90,15 +90,15 @@ str(datosAdult)
 
 ```{r}
 # Comprobamos que el 91,7% de las observaciones en capital-gain corresponden a 0, sacamos esta columna del dataset al no ser determinante para ningún análisis.
-round(table(datosAdult$`capital-gain`)/nrow(datosAdult)*100,1)
-datosAdult <-select(datosAdult, -`capital-gain`)
+round(table(datosAdult$`capital.gain`)/nrow(datosAdult)*100,1)
+datosAdult <-select(datosAdult, -`capital.gain`)
 ```
 
 ```{r}
 #  Comprobamos que el 93,5% de las observaciones en capital-loss corresponden a 0, sacamos esta columna del dataset al no ser determinante para ningún análisis.
 
 round(table(datosAdult$`capital-loss`)/nrow(datosAdult)*100,1)
-datosAdult <-select(datosAdult, -`capital-loss`)
+datosAdult <-select(datosAdult, -`capital.loss`)
 
 ```
 
@@ -214,7 +214,7 @@ round(table(datosAdult$`native-country`)/nrow(datosAdult)*100,1)
 
 listforvalues <-unique(datosAdult$EdLevel)
 
-Data_DF <- filter(datosAdult,`native-country`!=' ?')  %>% select(`native-country`,EdLevel) 
+Data_DF <- filter(datosAdult,`native.country`!=' ?')  %>% select(`native.country`,EdLevel) 
 Data_DF <- data.frame(table(Data_DF))
 Data_DFfullfill <- ''
 
@@ -234,9 +234,9 @@ Rx <- c(1:nrow(Data_DFfullfill))
   
   for (x in Rx){
 
-   datosAdult <-  mutate(datosAdult , `native-country`= if_else(`native-country`==' ?'& EdLevel == as.character(Data_DFfullfill[x,2])
+   datosAdult <-  mutate(datosAdult , `native.country`= if_else(`native.country`==' ?'& EdLevel == as.character(Data_DFfullfill[x,2])
                                                       , as.character(Data_DFfullfill[x,1])
-                                                      ,`native-country`)
+                                                      ,`native.country`)
                         )               
   }                  
 
@@ -259,31 +259,147 @@ rm(Data_DF, Data_DFfullfill,Filtered_DF,Rx,x,VartoFact,listforvalues)
 
 ```{r}
 
-#Procedo a factorizar variables no numéricas, este caso las importantes son las variables modificadas: Workclass, occupation, native-country
+#Procedo a factorizar variables no numéricas, este caso las importantes son las variables modificadas: Workclass, occupation, native.country
 
 ```
 
 
 
 ```{r}
-
 ## Defino las variables a factorizar
 
-cols <- c("workclass",
-          "occupation",
-          "native-country")
+cols <- c('workclass',
+          'occupation',
+          'native.country'
+          )
 
 for (i in cols){
   datosAdult[,i] = as.factor(datosAdult[,i])
 }
+  
+```
 
 
+```{r}
 ## Compruebo que la factorización ha funcionando
-
-
 str(datosAdult)
-
-
 rm(cols,i)
 
 ```
+
+
+# Comienzo a analizar las variables
+
+# Análisis de Age 
+```{r}
+# Realizo el histograma.   
+hist(datosAdult$age)
+
+# Reduzco los breaks para que el histograma de información más precisa
+h = hist(datosAdult$age, breaks=5)
+# imprimo los counts por bin.
+h['counts']
+#la mayoría de la población es menor a 60 años 80%)
+
+```
+    
+# Análisis de education y sexo.
+```{r}
+
+# A través del gráfico y las tablas puedo apreciar la distribución de estudios por Sexo, el 66% de la población es masculina, entre hombres y mujeres hay un ratio de aprox 2:1, para poder decir que el sexo no influye en la formación estos ratios deberían mantenerse (El análisis chi cuadrado se basa en una interpretación más rigurosa de esta idea). 
+
+## La gran mayortía de la población tienes estudios de nivel medio ( 62%) o de nivel alto (24%) haciendo un total de un 86% de población cualificada 
+
+## Compruebo los niveles de educación de hombresy mujeres y veo que las cifras se apróximan al ratio 2:1, se puede llegar a la conclusión que el sexo no influye en la formación
+
+ggplot(datosAdult,aes(x=EdLevel,y=fnlwgt,fill=sex),)+ 
+  geom_col() +
+  ggtitle('Análisis de Education')
+
+# 'Distribución de poblacion por sexo
+round(table(datosAdult$sex)/ nrow(datosAdult)*100,2)
+# A través del gráfico y las tablas puedo apreciar la distribución de estudios por Sexo, el 66% de la población es masculina, entre hombres y mujeres hay un ratio de aprox 2:1, para poder decir que el sexo no influye en la formación estos ratios deberían mantenerse (El análisis chi cuadrado se basa en una interpretación más rigurosa de esta idea).
+
+# Distribución de poblacion por Educación
+
+round(table(datosAdult$EdLevel)/ nrow(datosAdult)*100,2)
+# La gran mayoría de la población tienes estudios de nivel medio (62%) o de nivel alto (24%) haciendo un total de un 86% de población cualificada
+
+# Distribución de educación por sexo
+round(table(datosAdult$EdLevel,datosAdult$sex)/ nrow(datosAdult)*100,2)
+# Compruebo los niveles de educación de hombresy mujeres y veo que las cifras se apróximan al ratio 2:1, se puede llegar a la conclusión que el sexo no influye en la formación
+
+
+```
+## Análisis de ingresos por sexo.
+```{r}
+
+## El 75% de la poblacion obtiene ingresos inferiores a 50k
+## al
+
+ggplot(datosAdult,aes(x=income,y=fnlwgt,fill=sex),)+ 
+  geom_col() +
+  ggtitle('Análisis de Education')
+
+
+# Distribución de poblacion por sexo
+round(table(datosAdult$sex)/ nrow(datosAdult)*100,2)
+# El ratio 2:1 entre hombres y mujeres ya lo hemos visto, es importante que lo tengamos en cuenta el resto del análisis
+
+# Distribución de poblacion por ingresos
+round(table(datosAdult$income)/ nrow(datosAdult)*100,2)
+# El 75% de la población está por debajo de 50k
+
+# Distribución de ingresos por sexo
+round(table(datosAdult$income,datosAdult$sex)/ nrow(datosAdult)*100,2)
+# En el caso de los ingresos superiores a 50k podemos ver claramente que no se cumple el ratio 2:1 entre hombres y mujeres
+
+```
+
+# hour-per-week
+
+```{r}
+## Para hacer este análisis tengo que agrupar las horas, para ello creo la columna hour_bin
+
+datosAdult['hour_bin'] = round(datosAdult['hour.per.week']/10,0)*10
+
+ggplot(datosAdult,aes(x=hour_bin,y=fnlwgt,fill=sex),)+ 
+  geom_col() +
+  ggtitle('Análisis de hours per week')
+
+# Distribución de poblacion por sexo
+round(table(datosAdult$sex)/ nrow(datosAdult)*100,2)
+# El ratio 2:1 entre hombres y mujeres ya lo hemos visto, es importante que lo tengamos en cuenta el resto del análisis
+
+# Distribución de poblacion por hours
+round(table(datosAdult$hour_bin)/ nrow(datosAdult)*100,2)
+# El grueso de la población se concentra entre las 40-50 horas por semana (72%)
+
+# Distribución de horas por sexo
+round(table(datosAdult$hour_bin,datosAdult$sex)/ nrow(datosAdult)*100,2)
+# En trabajos ha tiempo parcial(hasta 40h) no se da el ratio 2:1, si no que es aprox1:1, una vez pasamos la jornada completa (40-50h), los trabajos que más horas requieren tiene una proporción mucho mayor de hombres
+
+```
+
+```{r}
+
+# Hemos comprobado que el sexo influye en la retribución y en las horas de trabajo, ahora vamos a comprobar si hay relación entre horas de trabajo y retribución
+
+ggplot(datosAdult,aes(x=hour_bin,y=fnlwgt,fill=income),)+ 
+  geom_col() +
+  ggtitle('Análisis de hours per week y retribución')
+
+
+# Distribución de poblacion por ingresos 
+round(table(datosAdult$income)/ nrow(datosAdult)*100,2)
+cat("\n El ratio 4:1 entre población con <50k y >50k \n ")
+
+# Distribución de horas por sexo
+round(table(datosAdult$hour_bin,datosAdult$income)/ nrow(datosAdult)*100,2)
+#La proporción 4:1 sólo se mantiene en el caso de trabajos a 40h, a nivel proporcional los trabajos con más horas son los mejor pagados, estos trabajos son copados por los hombres, así que podemos llegar a la conclusión que los hombres perciben salarios superiores y tambien le dedican más horas al trabajo
+
+
+
+
+```
+

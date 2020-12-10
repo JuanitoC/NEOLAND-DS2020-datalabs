@@ -117,3 +117,26 @@ gijon_lastWeek$DatePOSIXlt <- as.POSIXlt(gijon_lastWeek$Date, format = "%Y-%m-%d
 
 
 
+
+```{r}
+# Busco valores NA
+
+C = 1:ncol(gijon_lastWeek)
+
+  for (c in C){
+    print(names(gijon_lastWeek[c]))
+    print(table(is.na(gijon_lastWeek[,c])))
+
+  }
+```
+
+
+```{r}
+names(gijon_lastWeek[1])
+
+
+
+```
+
+
+

@@ -1,0 +1,98 @@
+```{r}
+####Ejercicio Extra Los 21 distritos de Madrid y las distintas poblaciones de la Comunidad tienen una Tasa de Incidencia Acumulada del COVID-19 en los últimos 15 días de un determinado valor. Cada semana la Comunidad de Madrid pubblica dichos datos en formato csv en el Portal de Datos Abiertos.
+
+Los datos se encuentran en la dirección: https://datos.comunidad.madrid/catalogo/dataset/7da43feb-8d4d-47e0-abd5-3d022d29d09e/resource/f22c3f43-c5d0-41a4-96dc-719214d56968/download/covid19_tia_muni_y_distritos_s.csv
+
+Haz un estudio de la evolución de de la tasa de incidencia de los distritos y municipios que la semana del 27 de octubre en casos confirmados 14 días pertenecieran al decil más alto.
+
+Haz un gráfico temporal por mes o semana de los casos confirmados totales.
+
+Sientete libre para realizar cualquier tipo de estudio del dataset para comentar tus conocimientos
+
+Nota puedes hacerlo tanto en R como Python[1]
+
+[1]: Recomendación: hazlo en los dos
+```
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(stringr)
+
+```
+
+
+
+```{r}
+
+## Carga del fichero 
+
+DF0 <- read.csv('https://datos.comunidad.madrid/catalogo/dataset/7da43feb-8d4d-47e0-abd5-3d022d29d09e/resource/f22c3f43-c5d0-41a4-96dc-719214d56968/download/covid19_tia_muni_y_distritos_s.csv',sep = ';')
+
+
+```
+
+
+```{r}
+DF <- DF0
+```
+
+
+
+```{r}
+
+## convierto las fechas, no consigo convertir la columna entera así que lo hago fila a fila.
+
+for (x in 1:nrow(DF)){
+  DF[x,'FI1'] <- date(DF[x,'fecha_informe'])
+  DF[x,'M'] <- month(DF[x,'FI1'])
+}
+
+# Transformo el campo `tasa_incidencia_acumulada_ultimos_14dias` en numerico, para ello reemplazo las `,` por `.`
+
+DF <- DF %>% mutate(
+  tasa_incidencia_acumulada_ultimos_14dias=str_replace(tasa_incidencia_acumulada_ultimos_14dias,',','.'),
+  tasa_incidencia_acumulada_ultimos_14dias=as.numeric(tasa_incidencia_acumulada_ultimos_14dias)
+  )
+
+```
+
+```{r}
+# hago un nuevo dataframe y renombro las columnas para que sea más fácil de manipular
+NewDF <- DF %>% 
+  select('municipio_distrito','tasa_incidencia_acumulada_ultimos_14dias','FI1','M') %>%
+  rename('MD' = 'municipio_distrito',
+         'TIA14' = 'tasa_incidencia_acumulada_ultimos_14dias' )
+
+
+```
+
+
+```{r}
+#Calculo el decil 10
+NewDF10 <- NewDF %>% filter(FI1 == '2020-10-27') %>% select (TIA14)
+
+decil10 <- quantile(NewDF10$TIA14,c(0.90))
+
+```
+
+```{r}
+## Extraigo la lista de distritos que incluye el decil
+MDDecil10 <- NewDF %>% filter(FI1 == '2020-10-27',
+                              TIA14>=decil10
+                              ) ## %>% select('TIA14')
+
+DFSoloDecil10 <- NewDF %>% filter(MD %in% MDDecil10$MD)
+
+DFSoloDecil10
+
+```
+
+
+```{r}
+# Lanzo el gráfico con ggplot pero no consigo trazar nada
+ggplot(data=DFSoloDecil10,aes(y='TIA14',x='FI1'))+geom_point()
+
+```
+
