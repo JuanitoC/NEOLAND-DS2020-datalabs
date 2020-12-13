@@ -1,0 +1,228 @@
+---
+title: "LAB de ggplot"
+author: "Marco R. - NEOLAND"
+date: "30/11/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+# Cargamos librería
+library(tidyverse)
+```
+
+
+```{r}
+# Cargamos los datos
+ggplot2::mpg
+```
+
+
+
+```{r}
+# Creamos un gráfico con ggplot
+
+# DATOS
+ggplot(data = mpg) +
+  # GEOMETRIAS (funciones de estética)
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+
+```{r}
+# Diferenciamos por color cada clase de coche
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = class))
+```
+
+
+```{r}
+# Diferenciamos el tamaño de cada clase con el atributo size
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, size=class))
+```
+
+
+
+```{r}
+# ALPHA es la gradación de color por clase
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+```
+
+
+```{r}
+# SHAPE es el tipo de punto por clase
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+```
+
+
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+```
+
+
+```{r}
+# asignamos la escala de colores (por paleta, hexadecimal...combinaciones ColorBrewer)
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), color = "#9999CC")
+```
+
+
+Palette de colores: http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+
+https://ggplot2.tidyverse.org/reference/scale_brewer.html#palettes
+
+
+```{r}
+# creamos una matriz con facet_wrap para distribuir las variables o elementos
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), color = "#9999CC") +
+  facet_wrap(~ class, nrow = 2)
+# creamos una matriz con todos los atributos excepto ~ class
+```
+
+
+```{r}
+# colocamos en la matriz los elementos de los atributos drv y cyl
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), color = "#9999CC") +
+  facet_wrap(drv ~ cyl)
+```
+
+## Objetos gráficos
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = year, y = displ))
+
+
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = year, y = displ), method = "lm")
+
+```
+
+
+
+```{r}
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv))
+```
+
+
+```{r smooth, message=FALSE, warning=FALSE, paged.print=FALSE}
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy), method = 'loess')
+
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv), method = 'loess')
+
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy), show.legend = T)
+```
+
+
+```{r smooth, message=FALSE, warning=FALSE, paged.print=FALSE}
+attach(mpg)
+loess(hwy ~ displ)
+```
+
+```{r}
+a <- loess(hwy ~ displ)
+a
+```
+
+
+```{r}
+residuales <- a$residuals
+residuales
+```
+
+
+```{r}
+ggplot(data = residuales) +
+  geom_smooth(mapping = aes(x = a$x, y = a$y))
+```
+
+
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color=drv)) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(mapping = aes(color = class)) +
+  geom_smooth(
+    data = filter(mpg, class == "subcompact"),
+    se = FALSE
+  )
+```
+
+
+
+
+## TAREA:
+
+
+
+Re-create the R code necessary to generate the following graphs.
+imagenes en la carpeta LAB
+
+
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point() +
+  geom_smooth()
+
+ggplot() +
+  geom_point(
+    data = mpg,
+    mapping = aes(x = displ, y = hwy)
+  ) +
+  geom_smooth(
+    data = mpg,
+    mapping = aes(x = displ, y = hwy)
+  )
+```
+
+
+
+```{r}
+bar <- ggplot(data = diamonds) +
+  geom_bar(
+    mapping = aes(x = cut, fill = cut),
+    show.legend = FALSE,
+    width = 1
+  ) +
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+bar + coord_polar()
+```
+
+
+```{r}
+nz <- map_data("world")
+
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", color = "black")
+
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", color = "black") +
+  coord_quickmap()
+```
+
+
