@@ -14,6 +14,7 @@ cat("\014")
 
 
 ```{r}
+library(ggplot2)
 
 PDF <- read.csv('Pokemon.csv')
 
@@ -24,16 +25,13 @@ summary(PDF)
 PDF['napa'] <- '0'
 
 ggplot(data = PDF)+
-  geom_point(mapping = aes(x = Type.1, y = Total,color=Generation,shape=Type.2))+facet_grid(Generation~napa)
+  geom_bar(mapping = aes(x = Type.1,shape=Type.2))+facet_grid(Generation~napa)
   #facet_wrap(drv ~cyl)
 
 
 
 ```
-```{r}
-# Tabla 
-table(PDF$Generation,PDF$Type.1)
-```
+
 # Busco alguna correlación entre las variables para comprender la bajada de NO y NO2
 
 ```{r}
@@ -41,20 +39,15 @@ library(stats)
 library(reshape2)
 # creo una matriz de correlación
 
-Matcor <- cor(PDF[,c("Total","HP","Attack","Defense","Sp..Atk","Sp..Def","Speed","Generation")])
+Matcor <- cor(PDF[,c("Total","HP","Attack","Defense","Sp..Atk","Sp..Def","Speed")])
 
 melted_Matcor <- melt(Matcor)
 
 library(ggplot2)
 ggplot(data = melted_Matcor, aes(x=Var1, y=Var2, fill=value)) + 
   geom_tile()
+
 ```
-
-```{r}
-names(PDF)
-```
-
-
 
 
 
@@ -69,9 +62,8 @@ melted_Matcorpos <- melted_Matcor %>% mutate (Value2 = ifelse(value %in% -0.70:0
                                               Value2 = ifelse(value > 0.70,1,Value2)
                                               )
 
-
 ggplot(data = melted_Matcorpos, aes(x=Var1, y=Var2, fill=Value2)) + 
 ggtitle('Correlacion')+    
   geom_tile()
 
-
+```
