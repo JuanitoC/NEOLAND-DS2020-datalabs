@@ -1,3 +1,0 @@
-Billetesde_200,Billetesde_100,Billetesde_50,Billetesde_20,Hora,Usuario
-0,0,1,2,Mon Nov 23 18:21:53 2020,JD
-0,0,1,2,Mon Nov 23 18:21:59 2020,JD
